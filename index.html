@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数字文娱实时情报与数字文化政策智库</title>
+  <meta name="description" content="数字文娱行业实时情报中心：发现热点、聚合来源、计算热度、分析趋势、关联项目/IP、对照政策、追溯原文。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 侧边导航 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">文</div>
+        <div class="brand-text">
+          <div class="brand-title">数字文娱智库</div>
+          <div class="brand-sub">实时情报 · 政策中枢</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav"><!-- JS 渲染 --></nav>
+      <div class="sidebar-foot">
+        <div class="sla-pill"><span class="dot"></span>关键数据源 5 分钟级更新</div>
+        <div class="ver">PRD V2.0 · 2026-09-08</div>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <div class="main">
+      <header class="topbar">
+        <button class="hamburger" id="hamburger" aria-label="菜单">☰</button>
+        <div class="ticker" id="ticker"><!-- DEI 滚动指标 --></div>
+        <div class="topbar-right">
+          <div class="user-chip" id="userChip" style="display:none">
+            <span class="uc-avatar" id="ucAvatar">U</span>
+            <span class="uc-name" id="ucName">—</span>
+            <span class="uc-online" id="ucOnline" title="在线人数">在线 0/10</span>
+            <div class="uc-pop" id="ucPop"><!-- 用户列表 --></div>
+          </div>
+          <div class="fw-control">
+            <button class="fw-btn" id="fwBtn"><span class="fw-ico">⏱</span>更新时限 · <b id="fwLabel">1个月</b> ▾</button>
+            <div class="fw-menu" id="fwMenu"></div>
+          </div>
+          <div class="searchbox">
+            <span class="search-ico">⌕</span>
+            <input id="globalSearch" type="text" placeholder="搜索作品 / 人物 / IP / 政策 / 热点…" autocomplete="off" />
+            <div class="search-suggest" id="searchSuggest"></div>
+          </div>
+          <button class="btn-sub" id="btnSubTop">订阅</button>
+        </div>
+      </header>
+      <main class="view" id="view"><!-- 视图渲染区 --></main>
+    </div>
+  </div>
+
+  <!-- 抽屉容器 -->
+  <div class="drawer-mask" id="drawerMask"></div>
+  <aside class="drawer" id="drawer"><div id="drawerBody"></div></aside>
+
+  <!-- 协作入口（登录门） -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-brand"><span class="auth-mark">文</span><span>数字文娱智库 · 协作空间</span></div>
+      <h2 class="auth-title">加入共享使用</h2>
+      <p class="auth-sub">本网页支持多人协作使用，ID 名额上限 <b id="authLimit">10</b> 个。请输入你的 ID 进入（已有 ID 可直接登录）。</p>
+      <input id="authId" class="auth-input" placeholder="你的 ID（如 user01 / 小明，2-20 位）" maxlength="20" autocomplete="off" />
+      <div class="auth-msg" id="authMsg"></div>
+      <div class="auth-row">
+        <button class="btn-primary" id="authJoin">进入</button>
+        <button class="btn-ghost" id="authGuest" style="display:none">以访客浏览</button>
+      </div>
+      <div class="auth-foot">
+        <span id="authSlots">已用 0 / 10</span>
+        <span class="auth-hint">ID 将被记录在共享名单中</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

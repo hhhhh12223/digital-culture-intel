@@ -1,0 +1,10 @@
+node_modules/
+users.json
+.DS_Store
+*.log
+
+# 内部/临时调试文件（不入库）
+.workbuddy/
+_*.js
+_*.txt
+*_out.txt

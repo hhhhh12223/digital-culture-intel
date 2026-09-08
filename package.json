@@ -1,0 +1,13 @@
+{
+  "name": "digital-culture-intel",
+  "version": "1.0.0",
+  "description": "数字文娱实时情报与数字文化政策智库 — 多人共享（ID 上限 10）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
