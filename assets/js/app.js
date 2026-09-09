@@ -638,7 +638,15 @@ function openTrend(id){
   $('#drawerBody').querySelectorAll('[data-pol3]').forEach(el=>el.onclick=()=>openPolicy(el.dataset.pol3));
 }
 
-/* ================= 数据中心 ================= */
+/* ================= 协作日历 + 文件中心 ================= */
+let calYear, calMonth; // 当前显示的年月
+function initCal() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth(); // 0-11
+}
+initCal();
+
 function renderData(){
   view.innerHTML=`
   <div class="view-head"><div><div class="eyebrow">Data Center</div><div class="view-title">数据中心</div>
@@ -670,8 +678,8 @@ function renderData(){
     <div class="btn-row" style="margin-top:10px"><button class="btn" id="csRefresh">刷新协作状态</button><button class="btn" id="csLogout">切换 / 退出</button></div>
   </div>
 
-  <div class="section-title">政策日历</div>
-  <div class="card">${calGrid()}</div>
+  <div class="section-title">协作日历 · 文件中心 <span class="muted small">（点击日期上传/查看文件，团队共享）</span></div>
+  <div class="card" id="calCard">${buildCalendar()}</div>
 
   <div class="section-title">历史数据 / 报告</div>
   <div class="grid g-3">
@@ -711,24 +719,245 @@ function bindCollabPanel(){
   $('#csLogout').onclick = ()=> doLogout();
   refresh();
 }
-function calGrid(){
-  const wk=['一','二','三','四','五','六','日'];
-  let h=`<div class="cal-grid">${wk.map(w=>`<div class="cal-cell head">${w}</div>`).join('')}`;
-  for(let i=0;i<28;i++){
-    h+=`<div class="cal-cell"><div class="dnum">${i+1}</div>${calEventsFor(i+1)}</div>`;
+/* ---------- 协作月历构建 ---------- */
+function buildCalendar() {
+  const today = new Date();
+  const todayStr = fmtDate(today);
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay = new Date(calYear, calMonth + 1, 0);
+  const startDow = (firstDay.getDay() + 6) % 7; // 周一=0 ... 周日=6
+  const daysInMonth = lastDay.getDate();
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const wk = ['一','二','三','四','五','六','日'];
+
+  let h = `<div class="cal-header">
+    <button class="cal-nav" id="calPrev" title="上个月">◀</button>
+    <div class="cal-title">${calYear}年 ${monthNames[calMonth]}</div>
+    <button class="cal-nav" id="calNext" title="下个月">▶</button>
+    <button class="cal-today-btn" id="calToday" title回到今天">今天</button>
+  </div>
+  <div class="cal-grid">`;
+  // 星期头
+  h += wk.map(w => `<div class="cal-cell head">${w}</div>`).join('');
+  // 上月空白
+  for (let i = 0; i < startDow; i++) h += `<div class="cal-cell empty"></div>`;
+  // 当月日期
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const events = getCalEvents(dateStr);
+    const fileCount = getFileCount(dateStr);
+    h += `<div class="cal-cell day ${isToday?'today':''} ${fileCount>0?'has-files':''}" data-date="${dateStr}">
+      <div class="dnum">${d}</div>
+      ${events}
+      ${fileCount > 0 ? `<div class="file-badge" title="${fileCount}个文件">📎 ${fileCount}</div>` : ''}
+    </div>`;
   }
-  return h+'</div>';
+  // 下月空白（补满6行）
+  const totalCells = startDow + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 0; i < remaining; i++) h += `<div class="cal-cell empty"></div>`;
+  h += '</div>';
+
+  // 延迟绑定事件
+  setTimeout(() => bindCalEvents(), 0);
+  return h;
 }
-function calEventsFor(day){
-  const map={
-    3:['ce-pub','微短剧办法施行','pol_weiduanju'],
-    7:['ce-eff','某市措施生效','pol_local1'],
-    10:['ce-dead','XR 征求意见截止','pol_xr'],
-    13:['ce-pub','精品计划申报','pol_jingpin'],
-    23:['ce-dead','某市申报截止','pol_local1'],
+
+function fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getCalEvents(dateStr) {
+  // 从 CAL 数据和硬编码事件中查找
+  const day = parseInt(dateStr.split('-')[2], 10);
+  const map = {
+    3: ['ce-pub', '微短剧办法施行', 'pol_weiduanju'],
+    7: ['ce-eff', '某市措施生效', 'pol_local1'],
+    9: ['ce-pub', '服贸会开幕·微短剧C位', ''],
+    10: ['ce-dead', 'XR 征求意见截止', 'pol_xr'],
+    13: ['ce-pub', '精品计划申报', 'pol_jingpin'],
+    23: ['ce-dead', '某市申报截止', 'pol_local1'],
   };
-  const e=map[day]; if(!e)return '';
+  const e = map[day];
+  if (!e) return '';
   return `<div class="cal-event ${e[0]}" data-pol="${e[2]}" title="${e[1]}">${e[1]}</div>`;
+}
+
+let _fileCache = {}; // date -> count
+function getFileCount(dateStr) {
+  if (_fileCache[dateStr] !== undefined) return _fileCache[dateStr];
+  // 异步加载，先返回缓存值
+  loadFileCount(dateStr);
+  return _fileCache[dateStr] || 0;
+}
+async function loadFileCount(dateStr) {
+  try {
+    const r = await fetch('/api/files/list?date=' + dateStr);
+    if (!r.ok) return;
+    const d = await r.json();
+    _fileCache[dateStr] = d.count || 0;
+    // 更新 DOM
+    const cell = document.querySelector(`.cal-cell[data-date="${dateStr}"] .file-badge`);
+    if (cell && _fileCache[dateStr] > 0) {
+      cell.textContent = `📎 ${_fileCache[dateStr]}`;
+      cell.parentElement.classList.add('has-files');
+    }
+  } catch(e){}
+}
+
+function bindCalEvents() {
+  $('#calPrev').onclick = () => { calMonth--; if(calMonth<0){calMonth=11;calYear--;} refreshCal(); };
+  $('#calNext').onclick = () => { calMonth++; if(calMonth>11){calMonth=0;calYear++;} refreshCal(); };
+  $('#calToday').onclick = () => { initCal(); refreshCal(); };
+  // 点击日期 → 打开文件弹窗
+  document.querySelectorAll('.cal-cell.day[data-date]').forEach(cell => {
+    cell.onclick = () => openDayFiles(cell.dataset.date);
+  });
+  // 政策事件点击
+  document.querySelectorAll('.cal-event[data-pol]').forEach(el => {
+    el.onclick = (ev) => { ev.stopPropagation(); if(el.dataset.pol) openPolicy(el.dataset.pol); };
+  });
+}
+
+function refreshCal() {
+  const card = $('#calCard');
+  if (card) card.innerHTML = buildCalendar();
+  // 重新加载所有已有文件的日期计数
+  Object.keys(_fileCache).forEach(d => loadFileCount(d));
+}
+
+/* ---------- 日期文件弹窗 ---------- */
+let _dayModalDate = '';
+function openDayFiles(dateStr) {
+  _dayModalDate = dateStr;
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'dayFileModal';
+  modal.innerHTML = `
+    <div class="modal-box modal-lg">
+      <div class="modal-head">
+        <div><span class="modal-title">📅 ${dateStr} · 文件中心</span></div>
+        <button class="modal-close" id="closeDayModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" id="uploadZone">
+          <div class="upload-icon">📤</div>
+          <div>点击或拖拽文件到此处上传</div>
+          <div class="muted small" style="margin-top:4px">支持所有格式，单文件最大 50MB</div>
+          <input type="file" id="fileInput" multiple style="display:none">
+        </div>
+        <div class="file-list" id="dayFileList"><div class="muted small">加载中…</div></div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  $('#closeDayModal').onclick = () => modal.remove();
+  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
+
+  // 上传区域交互
+  const zone = $('#uploadZone');
+  const input = $('#fileInput');
+  zone.onclick = () => input.click();
+  zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('drag-over'); };
+  zone.ondragleave = () => zone.classList.remove('drag-over');
+  zone.ondrop = (e) => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleUploads(e.dataTransfer.files);
+  };
+  input.onchange = () => { if(input.files.length) handleUploads(input.files); };
+
+  // 加载文件列表
+  loadDayFiles(dateStr);
+}
+
+async function loadDayFiles(dateStr) {
+  const listEl = $('#dayFileList');
+  try {
+    const r = await fetch('/api/files/list?date=' + dateStr);
+    const d = await r.json();
+    _fileCache[dateStr] = d.count || 0;
+    if (!d.files || d.files.length === 0) {
+      listEl.innerHTML = `<div class="empty" style="padding:20px">暂无文件，拖拽或点击上方区域上传</div>`;
+      return;
+    }
+    listEl.innerHTML = d.files.map(f => `
+      <div class="file-item" data-id="${f.id}">
+        <div class="file-icon">${getFileIcon(f.mimeType, f.name)}</div>
+        <div class="file-info">
+          <div class="file-name" title="${esc(f.name)}">${esc(f.name)}</div>
+          <div class="file-meta">${formatSize(f.size)} · ${f.uploader || '匿名'} · ${fmtTime(f.uploadedAt)}</div>
+          ${f.note ? `<div class="file-note muted small">${esc(f.note)}</div>` : ''}
+        </div>
+        <div class="file-actions">
+          <button class="btn btn-sm file-dl" data-id="${f.id}" title="下载/预览">下载</button>
+          <button class="btn btn-sm file-del" data-id="${f.id}" title="删除">删除</button>
+        </div>
+      </div>`).join('');
+    // 绑定操作
+    listEl.querySelectorAll('.file-dl').forEach(b => b.onclick = () => window.open('/api/files/download?id='+b.dataset.id));
+    listEl.querySelectorAll('.file-del').forEach(b => b.onclick = () => confirmDelete(b.dataset.id, b.closest('.file-item')));
+  } catch(e) {
+    listEl.innerHTML = `<div class="muted small" style="color:var(--red)">加载失败，请重试</div>`;
+  }
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+function getFileIcon(mime, name) {
+  const ext = (name||'').split('.').pop().toLowerCase();
+  if (['jpg','jpeg','png','gif','webp','svg','bmp'].includes(ext)) return '🖼️';
+  if (ext === 'pdf') return '📄';
+  if (['doc','docx'].includes(ext)) return '📝';
+  if (['xls','xlsx','csv'].includes(ext)) return '📊';
+  if (['ppt','pptx'].includes(ext)) return '📽️';
+  if (['mp4','avi','mkv','mov'].includes(ext)) return '🎬';
+  if (['mp3','wav','flac'].includes(ext)) return '🎵';
+  if (['zip','rar','7z','tar','gz'].includes(ext)) return '📦';
+  return '📎';
+}
+
+async function handleUploads(fileList) {
+  const uploader = (() => { try { return localStorage.getItem('dei_uname') || ''; } catch(e){ return ''; } })();
+  for (const file of fileList) {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('date', _dayModalDate);
+    fd.append('uploader', uploader || '协作者');
+    try {
+      const r = await fetch('/api/files/upload', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok) toast(`✅ ${file.name} 上传成功`);
+      else toast(`❌ ${d.msg || '上传失败'}`);
+    } catch(e) {
+      toast(`❌ 网络错误：${file.name}`);
+    }
+  }
+  // 刷新文件列表
+  loadDayFiles(_dayModalDate);
+  // 刷新日历角标
+  refreshCal();
+}
+
+async function confirmDelete(id, itemEl) {
+  if (!confirm('确定删除此文件？')) return;
+  try {
+    const r = await fetch('/api/files/delete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ id })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      if (itemEl) itemEl.style.opacity = '0.3';
+      toast('已删除');
+      loadDayFiles(_dayModalDate);
+      refreshCal();
+    } else toast('删除失败：' + (d.msg||''));
+  } catch(e) { toast('网络错误'); }
 }
 
 /* ================= 搜索 ================= */

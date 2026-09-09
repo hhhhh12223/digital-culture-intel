@@ -1,5 +1,7 @@
 node_modules/
 users.json
+files.json
+uploads/
 .DS_Store
 *.log
 

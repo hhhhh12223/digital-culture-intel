@@ -18,7 +18,13 @@ const LIMIT = 10;                 // 总 ID 上限
 const ONLINE_MS = 5 * 60 * 1000;  // 5 分钟内算在线
 const USERS_FILE = path.join(ROOT, 'users.json');
 const DATA_FILE = path.join(ROOT, 'data.json');
+const FILES_DIR = path.join(ROOT, 'uploads');       // 文件存储目录
+const FILES_META = path.join(ROOT, 'files.json');   // 文件元数据索引
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dei-admin-2026'; // 更新情报用的管理口令
+const MAX_FILE_SIZE = 50 * 1024 * 1024;            // 单文件上限 50MB
+
+// 确保 uploads 目录存在
+try { if (!fs.existsSync(FILES_DIR)) fs.mkdirSync(FILES_DIR, { recursive: true }); } catch(e){}
 
 /* ---------- 用户存储（文件持久化）---------- */
 function loadUsers() {
@@ -49,6 +55,241 @@ function saveData(d) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(d, null, 2), 'utf8');
 }
 let DATA = loadData();
+
+/* ---------- 文件中心存储（元数据索引）---------- */
+function loadFilesMeta() {
+  try {
+    const raw = fs.readFileSync(FILES_META, 'utf8');
+    return JSON.parse(raw);
+  } catch (e) { return { files: [] }; }
+}
+function saveFilesMeta(meta) {
+  fs.writeFileSync(FILES_META, JSON.stringify(meta, null, 2), 'utf8');
+}
+
+/* ---------- Multipart 解析（零依赖）---------- */
+/**
+ * 手动解析 multipart/form-data
+ * 返回: { fields: {name: value, ...}, files: {fieldName: {filename, data, mimeType}, ...} }
+ */
+function parseMultipart(body, boundary) {
+  const fields = {};
+  const files = {};
+  const parts = body.split('--' + boundary);
+  for (const part of parts) {
+    if (!part || part === '--' || part.startsWith('\r\n--')) continue;
+    const headEnd = part.indexOf('\r\n\r\n');
+    if (headEnd < 0) continue;
+    const header = part.slice(0, headEnd);
+    const content = part.slice(headEnd + 4);
+    // 去掉末尾 \r\n
+    const data = content.endsWith('\r\n') ? content.slice(0, -2) : content;
+
+    const nameMatch = header.match(/name="([^"]+)"/);
+    if (!nameMatch) continue;
+    const fieldName = nameMatch[1];
+
+    const fileMatch = header.match(/filename="([^"]+)"/);
+    const mimeMatch = header.match(/Content-Type:\s*(.+)/);
+
+    if (fileMatch && fileMatch[1]) {
+      files[fieldName] = {
+        filename: fileMatch[1],
+        data: Buffer.from(data, 'binary'),
+        mimeType: mimeMatch ? mimeMatch[1].trim() : 'application/octet-stream'
+      };
+    } else {
+      fields[fieldName] = data;
+    }
+  }
+  return { fields, files };
+}
+
+/* ---------- 文件 API 路由 ---------- */
+async function handleFileApi(req, res, pathname, urlObj) {
+
+  // --- 上传文件：POST /api/files/upload ---
+  // Content-Type: multipart/form-data
+  // Fields: date (YYYY-MM-DD), note (可选备注), uploader (上传者名)
+  // File:   file (文件本身)
+  if (pathname === '/api/files/upload' && req.method === 'POST') {
+    const ct = req.headers['content-type'] || '';
+    let boundMatch = ct.match(/boundary=(.+)$/);
+    if (!boundMatch) {
+      return sendJSON(res, 400, { error: 'NO_BOUNDARY', msg: '需要 multipart/form-data 格式' });
+    }
+    const boundary = boundMatch[1].trim();
+
+    return new Promise((resolve) => {
+      let chunks = [];
+      req.on('data', c => {
+        chunks.push(c);
+        // 超过文件大小限制
+        if (Buffer.concat(chunks).length > MAX_FILE_SIZE + 1024 * 1024) {
+          req.destroy();
+          resolve(sendJSON(res, 413, { error: 'TOO_LARGE', msg: `文件超过 ${MAX_FILE_SIZE/1024/1024}MB 限制` }));
+        }
+      });
+      req.on('end', () => {
+        try {
+          const body = Buffer.concat(chunks).toString('binary');
+          const { fields, files } = parseMultipart(body, boundary);
+
+          const fileObj = files.file;
+          if (!fileObj || !fileObj.data || fileObj.data.length === 0) {
+            return resolve(sendJSON(res, 400, { error: 'NO_FILE', msg: '未检测到文件，请选择文件后上传' }));
+          }
+
+          const dateStr = (fields.date || '').replace(/[^\d\-]/g, '');
+          // 验证日期格式 YYYY-MM-DD
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            return resolve(sendJSON(res, 400, { error: 'BAD_DATE', msg: '日期格式错误，需要 YYYY-MM-DD' }));
+          }
+
+          const uploader = (fields.uploader || '匿名').slice(0, 50);
+          const note = (fields.note || '').slice(0, 200);
+          const safeName = path.basename(fileObj.filename).replace(/[<>:"|?*]/g, '_');
+
+          // 创建日期目录
+          const dateDir = path.join(FILES_DIR, dateStr);
+          try { if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir, { recursive: true }); } catch(e){}
+
+          // 存储文件（加时间戳避免重名）
+          const ts = Date.now();
+          const rand = crypto.randomBytes(4).toString('hex');
+          const storedName = `${ts}_${rand}_${safeName}`;
+          const filePath = path.join(dateDir, storedName);
+          fs.writeFileSync(filePath, fileObj.data);
+
+          // 写入元数据
+          const meta = loadFilesMeta();
+          const fileRecord = {
+            id: `${dateStr}_${storedName}`,
+            date: dateStr,
+            originalName: safeName,
+            storedName: storedName,
+            size: fileObj.data.length,
+            mimeType: fileObj.mimeType,
+            uploader: uploader,
+            note: note,
+            uploadedAt: new Date().toISOString(),
+          };
+          meta.files.push(fileRecord);
+          saveFilesMeta(meta);
+
+          resolve(sendJSON(res, 200, {
+            ok: true,
+            file: {
+              id: fileRecord.id,
+              name: safeName,
+              size: fileRecord.size,
+              mimeType: fileObj.mimeType,
+              uploader: uploader,
+              uploadedAt: fileRecord.uploadedAt,
+            }
+          }));
+
+        } catch (err) {
+          resolve(sendJSON(res, 500, { error: 'UPLOAD_FAILED', msg: '上传失败: ' + String(err) }));
+        }
+      });
+      req.on('error', () => resolve(sendJSON(res, 500, { error: 'UPLOAD_FAILED', msg: '网络错误' })));
+    });
+  }
+
+  // --- 列出某日文件：GET /api/files/list?date=YYYY-MM-DD ---
+  if (pathname === '/api/files/list' && req.method === 'GET') {
+    const dateStr = (urlObj.query.date || '').replace(/[^\d\-]/g, '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      // 不传日期则返回所有文件的按日期聚合摘要
+      const meta = loadFilesMeta();
+      const byDate = {};
+      for (const f of meta.files) {
+        if (!byDate[f.date]) byDate[f.date] = [];
+        byDate[f.date].push(f);
+      }
+      // 每个日期只返回摘要
+      const summary = Object.keys(byDate).map(d => ({
+        date: d,
+        count: byDate[d].length,
+        files: byDate[d].map(f => ({
+          id: f.id, name: f.originalName, size: f.size,
+          mimeType: f.mimeType, uploader: f.uploader,
+          note: f.note, uploadedAt: f.uploadedAt
+        }))
+      }));
+      return sendJSON(res, 200, { ok: true, files: summary });
+    }
+    const meta = loadFilesMeta();
+    const dayFiles = meta.files.filter(f => f.date === dateStr);
+    return sendJSON(res, 200, {
+      ok: true,
+      date: dateStr,
+      count: dayFiles.length,
+      files: dayFiles.map(f => ({
+        id: f.id, name: f.originalName, size: f.size,
+        mimeType: f.mimeType, uploader: f.uploader,
+        note: f.note, uploadedAt: f.uploadedAt
+      }))
+    });
+  }
+
+  // --- 删除文件：POST /api/files/delete ---
+  if (pathname === '/api/files/delete' && req.method === 'POST') {
+    const body = await readBody(req);
+    const fileId = (body.id || '').replace(/[^a-zA-Z0-9_\-.]/g, '');
+    if (!fileId) return sendJSON(res, 400, { error: 'NO_ID', msg: '缺少文件 ID' });
+
+    const meta = loadFilesMeta();
+    const idx = meta.files.findIndex(f => f.id === fileId);
+    if (idx < 0) return sendJSON(res, 404, { error: 'NOT_FOUND', msg: '文件不存在' });
+
+    const rec = meta.files[idx];
+    // 删除物理文件
+    const filePath = path.join(FILES_DIR, rec.date, rec.storedName);
+    try { if (fs.existsSync(filePath)) fs.unlinkSync(filePath); } catch(e){}
+    // 从元数据移除
+    meta.files.splice(idx, 1);
+    saveFilesMeta(meta);
+    return sendJSON(res, 200, { ok: true, message: '已删除' });
+  }
+
+  // --- 下载/预览文件：GET /api/files/download?id=xxx ---
+  if (pathname === '/api/files/download' && req.method === 'GET') {
+    const fileId = (urlObj.query.id || '').replace(/[^a-zA-Z0-9_\-.]/g, '');
+    if (!fileId) return sendJSON(res, 400, { error: 'NO_ID', msg: '缺少文件 ID' });
+
+    const meta = loadFilesMeta();
+    const rec = meta.files.find(f => f.id === fileId);
+    if (!rec) return sendJSON(res, 404, { error: 'NOT_FOUND', msg: '文件不存在' });
+
+    const filePath = path.join(FILES_DIR, rec.date, rec.storedName);
+    if (!fs.existsSync(filePath)) return sendJSON(res, 404, { error: 'FILE_MISSING', msg: '文件已丢失' });
+
+    const ext = path.extname(rec.originalName).toLowerCase();
+    const mimeMap = {
+      '.pdf': 'application/pdf', '.png': 'image/png', '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.svg': 'image/svg+xml',
+      '.webp': 'image/webp', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg',
+      '.doc': 'application/msword', '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.xls': 'application/vnd.ms-excel', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.ppt': 'application/vnd.ms-powerpoint', '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.txt': 'text/plain; charset=utf-8', '.csv': 'text/csv; charset=utf-8',
+      '.zip': 'application/zip', '.rar': 'application/x-rar-compressed',
+    };
+    const contentType = mimeMap[ext] || 'application/octet-stream';
+
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(rec.originalName)}`,
+      'Content-Length': fs.statSync(filePath).size,
+    });
+    fs.createReadStream(filePath).pipe(res);
+    return; // 已直接响应，不走 sendJSON
+  }
+
+  return null; // 不是文件 API，返回 null 让主路由继续
+}
 
 function stamp() { return new Date().toISOString(); }
 
@@ -398,7 +639,25 @@ async function handleApi(req, res, pathname) {
 const server = http.createServer((req, res) => {
   const url = req.url || '/';
   const pathname = url.split('?')[0];
+  // 解析 query string 为对象
+  let urlObj = { query: {} };
+  try {
+    const qIdx = url.indexOf('?');
+    if (qIdx > -1) {
+      const qs = url.slice(qIdx + 1);
+      qs.split('&').forEach(pair => {
+        const [k, v] = pair.split('=');
+        if (k) urlObj.query[decodeURIComponent(k)] = decodeURIComponent(v || '');
+      });
+    }
+  } catch(e){}
+
   if (pathname.startsWith('/api/')) {
+    // 先尝试文件 API
+    if (pathname.startsWith('/api/files/')) {
+      handleFileApi(req, res, pathname, urlObj).catch(e => sendJSON(res, 500, { error: 'SERVER', msg: String(e) }));
+      return;
+    }
     handleApi(req, res, pathname).catch(e => sendJSON(res, 500, { error: 'SERVER', msg: String(e) }));
   } else {
     serveStatic(req, res, url);
