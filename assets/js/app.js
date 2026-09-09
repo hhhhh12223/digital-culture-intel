@@ -889,12 +889,26 @@ async function loadDayFiles(dateStr) {
           ${f.note ? `<div class="file-note muted small">${esc(f.note)}</div>` : ''}
         </div>
         <div class="file-actions">
-          <button class="btn btn-sm file-dl" data-id="${f.id}" title="下载/预览">下载</button>
-          <button class="btn btn-sm file-del" data-id="${f.id}" title="删除">删除</button>
+          <button class="btn btn-sm file-dl" data-id="${f.id}" title="下载文件">⬇️ 下载</button>
+          <button class="btn btn-sm file-view" data-id="${f.id}" title="在线预览（新窗口）">👁️ 预览</button>
+          <button class="btn btn-sm file-del" data-id="${f.id}" title="删除文件">🗑️</button>
         </div>
       </div>`).join('');
-    // 绑定操作
-    listEl.querySelectorAll('.file-dl').forEach(b => b.onclick = () => window.open('/api/files/download?id='+b.dataset.id));
+    // 绑定操作 —— 下载（强制下载，不被拦截）
+    listEl.querySelectorAll('.file-dl').forEach(b => b.onclick = (e) => {
+      e.stopPropagation();
+      const id = b.dataset.id;
+      const a = document.createElement('a');
+      a.href = '/api/files/download?id=' + id + '&dl=1';
+      a.download = '';  // 触发浏览器原生下载
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+    // 预览（新窗口打开，inline 模式）
+    listEl.querySelectorAll('.file-view').forEach(b => b.onclick = () => {
+      window.open('/api/files/download?id=' + b.dataset.id, '_blank');
+    });
     listEl.querySelectorAll('.file-del').forEach(b => b.onclick = () => confirmDelete(b.dataset.id, b.closest('.file-item')));
   } catch(e) {
     listEl.innerHTML = `<div class="muted small" style="color:var(--red)">加载失败，请重试</div>`;

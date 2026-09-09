@@ -67,40 +67,68 @@ function saveFilesMeta(meta) {
   fs.writeFileSync(FILES_META, JSON.stringify(meta, null, 2), 'utf8');
 }
 
-/* ---------- Multipart 解析（零依赖）---------- */
+/* ---------- Multipart 解析（纯 Buffer 操作，支持二进制文件）---------- */
 /**
- * 手动解析 multipart/form-data
- * 返回: { fields: {name: value, ...}, files: {fieldName: {filename, data, mimeType}, ...} }
+ * 用 Buffer 级操作解析 multipart/form-data
+ * 返回: { fields: {name: value, ...}, files: {fieldName: {filename, data(Buffer), mimeType}, ...} }
  */
-function parseMultipart(body, boundary) {
+function parseMultipartBuffer(bodyBuffer, boundary) {
   const fields = {};
   const files = {};
-  const parts = body.split('--' + boundary);
-  for (const part of parts) {
-    if (!part || part === '--' || part.startsWith('\r\n--')) continue;
-    const headEnd = part.indexOf('\r\n\r\n');
-    if (headEnd < 0) continue;
-    const header = part.slice(0, headEnd);
-    const content = part.slice(headEnd + 4);
-    // 去掉末尾 \r\n
-    const data = content.endsWith('\r\n') ? content.slice(0, -2) : content;
+  const delim = Buffer.from('--' + boundary);
+  const clos = Buffer.from('--' + boundary + '--');
 
-    const nameMatch = header.match(/name="([^"]+)"/);
-    if (!nameMatch) continue;
+  let pos = 0;
+  while (pos < bodyBuffer.length) {
+    // 查找下一个 delimiter
+    const idx = bodyBuffer.indexOf(delim, pos);
+    if (idx === -1) break;
+
+    const partStart = idx + delim.length;
+    // 检查是否是关闭 delimiter
+    const afterDelim = bodyBuffer.slice(partStart, partStart + 2);
+    if (afterDelim.equals(Buffer.from('--'))) break;
+
+    // 找到 part 的结束位置（下一个 delimiter 或结尾）
+    const nextIdx = bodyBuffer.indexOf(delim, partStart);
+    if (nextIdx === -1) break;
+
+    let partBody = bodyBuffer.slice(partStart, nextIdx);
+
+    // 去掉 part 开头的 \r\n
+    if (partBody.length > 0 && partBody[0] === 0x0d) partBody = partBody.slice(2);
+    // 去掉 part 结尾的 \r\n
+    if (partBody.length > 1 && partBody[partBody.length - 2] === 0x0d && partBody[partBody.length - 1] === 0x0a) {
+      partBody = partBody.slice(0, -2);
+    }
+
+    // 找到 header 和 body 的分界线 (\r\n\r\n)
+    const headerEnd = partBody.indexOf(Buffer.from('\r\n\r\n'));
+    if (headerEnd < 0) { pos = nextIdx; continue; }
+
+    const headerBuf = partBody.slice(0, headerEnd);
+    const contentBuf = partBody.slice(headerEnd + 4);
+
+    // 解析 header（ASCII 安全，可转字符串）
+    const headerStr = headerBuf.toString('utf8');
+    const nameMatch = headerStr.match(/name="([^"]+)"/);
+    if (!nameMatch) { pos = nextIdx; continue; }
     const fieldName = nameMatch[1];
 
-    const fileMatch = header.match(/filename="([^"]+)"/);
-    const mimeMatch = header.match(/Content-Type:\s*(.+)/);
+    const fileMatch = headerStr.match(/filename="([^"]*)"/);
+    const mimeMatch = headerStr.match(/Content-Type:\s*(.+)/i);
 
     if (fileMatch && fileMatch[1]) {
       files[fieldName] = {
         filename: fileMatch[1],
-        data: Buffer.from(data, 'binary'),
+        data: Buffer.from(contentBuf),  // 保持原始 Buffer，不做任何转换
         mimeType: mimeMatch ? mimeMatch[1].trim() : 'application/octet-stream'
       };
     } else {
-      fields[fieldName] = data;
+      fields[fieldName] = contentBuf.toString('utf8');
     }
+
+    pos = nextIdx;
   }
   return { fields, files };
 }
@@ -132,8 +160,9 @@ async function handleFileApi(req, res, pathname, urlObj) {
       });
       req.on('end', () => {
         try {
-          const body = Buffer.concat(chunks).toString('binary');
-          const { fields, files } = parseMultipart(body, boundary);
+          // 保持为 Buffer，不转字符串！
+          const bodyBuffer = Buffer.concat(chunks);
+          const { fields, files } = parseMultipartBuffer(bodyBuffer, boundary);
 
           const fileObj = files.file;
           if (!fileObj || !fileObj.data || fileObj.data.length === 0) {
@@ -254,7 +283,7 @@ async function handleFileApi(req, res, pathname, urlObj) {
     return sendJSON(res, 200, { ok: true, message: '已删除' });
   }
 
-  // --- 下载/预览文件：GET /api/files/download?id=xxx ---
+  // --- 下载/预览文件：GET /api/files/download?id=xxx&dl=1 (dl=1 强制下载) ---
   if (pathname === '/api/files/download' && req.method === 'GET') {
     const fileId = (urlObj.query.id || '').replace(/[^a-zA-Z0-9_\-.]/g, '');
     if (!fileId) return sendJSON(res, 400, { error: 'NO_ID', msg: '缺少文件 ID' });
@@ -264,7 +293,7 @@ async function handleFileApi(req, res, pathname, urlObj) {
     if (!rec) return sendJSON(res, 404, { error: 'NOT_FOUND', msg: '文件不存在' });
 
     const filePath = path.join(FILES_DIR, rec.date, rec.storedName);
-    if (!fs.existsSync(filePath)) return sendJSON(res, 404, { error: 'FILE_MISSING', msg: '文件已丢失' });
+    if (!fs.existsSync(filePath)) return sendJSON(res, 404, { error: 'FILE_MISSING', msg: '文件已丢失（可能因服务重启，Render免费版文件系统是临时的）' });
 
     const ext = path.extname(rec.originalName).toLowerCase();
     const mimeMap = {
@@ -278,14 +307,21 @@ async function handleFileApi(req, res, pathname, urlObj) {
       '.zip': 'application/zip', '.rar': 'application/x-rar-compressed',
     };
     const contentType = mimeMap[ext] || 'application/octet-stream';
+    const forceDl = urlObj.query.dl === '1';
+    const disposition = forceDl
+      ? `attachment; filename*=UTF-8''${encodeURIComponent(rec.originalName)}`
+      : `inline; filename*=UTF-8''${encodeURIComponent(rec.originalName)}`;
 
+    const stat = fs.statSync(filePath);
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(rec.originalName)}`,
-      'Content-Length': fs.statSync(filePath).size,
+      'Content-Disposition': disposition,
+      'Content-Length': stat.size,
+      'Cache-Control': 'no-cache',
+      'Accept-Ranges': 'bytes',
     });
     fs.createReadStream(filePath).pipe(res);
-    return; // 已直接响应，不走 sendJSON
+    return;
   }
 
   return null; // 不是文件 API，返回 null 让主路由继续
