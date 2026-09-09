@@ -8,3 +8,6 @@ users.json
 _*.js
 _*.txt
 *_out.txt
+
+# 本地工具目录（cloudflared / gh 等，体积大且不入库）
+bin/
