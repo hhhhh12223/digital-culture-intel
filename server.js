@@ -182,6 +182,7 @@ async function handleApi(req, res, pathname) {
 }
 
 /* ---------- 启动 ---------- */
+// (2026-09-09) 已支持 /api/data 实时数据源与 /api/admin/update 管理更新。
 const server = http.createServer((req, res) => {
   const url = req.url || '/';
   const pathname = url.split('?')[0];
