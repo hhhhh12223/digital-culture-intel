@@ -1020,6 +1020,46 @@ function startDataWatch(){
   }, 30000);
 }
 
+/* ---------------- 智能刷新按钮 ----------------
+   点击后调用 /api/admin/refresh → 后端自动抓取最新文娱资讯
+   → 更新 data.json → 版本自增 → 30s 轮询自动重渲染全站 */
+(function bindSmartRefresh(){
+  const btn = document.getElementById('smartRefreshBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    // 防止重复点击
+    if (btn.disabled || btn.classList.contains('sr-loading')) return;
+    btn.classList.add('sr-loading');
+    btn.disabled = true;
+    const ico = btn.querySelector('.sr-ico');
+    const origText = btn.childNodes[btn.childNodes.length - 1].textContent;
+    btn.innerHTML = '<span class="sr-ico sr-spin">🔄</span> 正在智能刷新…';
+
+    try {
+      const res = await fetch('/api/admin/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: 'dei-admin-2026' })
+      });
+      const j = await res.json();
+      if (res.ok && j.ok) {
+        toast('✅ ' + (j.hint || '智能刷新完成，版本 ' + j.version));
+        // 立即触发一次数据加载（不等30s轮询）
+        const loaded = await loadLiveData();
+        if (loaded) { renderTicker(); router(); }
+      } else {
+        toast('⚠️ ' + ((j && j.msg) || '刷新失败，请稍后重试'));
+      }
+    } catch (e) {
+      toast('❌ 网络错误：' + String(e));
+    } finally {
+      btn.classList.remove('sr-loading');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="sr-ico">🔄</span> 智能刷新';
+    }
+  });
+})();
+
 /* ---------------- 启动 ---------------- */
 (async function boot(){
   await loadLiveData();   // 优先加载服务端实时数据（失败则回退打包数据）

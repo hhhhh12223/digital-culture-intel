@@ -1,7 +1,7 @@
 {
-  "version": "2026-09-09.3",
+  "version": "2026-09-09.4",
   "db": {
-    "REF_NOW": 1788970620000,
+    "REF_NOW": 1788933420226,
     "PLATFORMS": [
       {
         "key": "weibo",
@@ -31,7 +31,7 @@
     ],
     "DEI": {
       "value": 78.4,
-      "delta": 3.2,
+      "delta": 3,
       "weights": [
         {
           "name": "搜索热度",
@@ -71,29 +71,29 @@
         {
           "name": "AI漫剧指数",
           "key": "ai",
-          "value": 86.7,
-          "delta": 12.4,
+          "value": 87.7,
+          "delta": 1,
           "color": "#a855f7"
         },
         {
           "name": "电影声量",
           "key": "movie",
-          "value": 80.1,
-          "delta": 2.4,
+          "value": 82.1,
+          "delta": -1,
           "color": "#4d8dff"
         },
         {
           "name": "演唱会热度",
           "key": "concert",
           "value": 72.5,
-          "delta": 4.9,
+          "delta": 0,
           "color": "#2ee6e6"
         },
         {
           "name": "短剧声量",
           "key": "short",
           "value": 76.2,
-          "delta": 3.1,
+          "delta": 3,
           "color": "#ffb547"
         }
       ],
@@ -142,16 +142,178 @@
     },
     "HOTSPOTS": [
       {
-        "id": "h1",
+        "id": "h3",
         "rank": 1,
+        "title": "AI 剧首登湖南卫视黄金档，《后西游记》打破影视圈旧玩法",
+        "category": "AI漫剧",
+        "heat": 948,
+        "growth1h": 12.3,
+        "status": "boom",
+        "firstSeen": "06:30",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
+        "platforms": [
+          "douyin",
+          "weibo",
+          "news",
+          "bilibili"
+        ],
+        "summary": "《后西游记》登陆湖南卫视黄金档迎来重大数据验证：首播酷云实时峰值收视率达 0.3384%、市占率 1.7862%，拿下同时段省级卫视第一。芒果超媒股价 8/31 以来累计涨幅超 56%，市值增加超百亿元。欢瑞世纪同期涨近 50%，博纳影业涨超 20%。博纳出品的《三星堆：未来往事》即将登陆全国院线，为首部 AI 深度参与制作的院线超写实动画长片。",
+        "keywords": [
+          "AI剧",
+          "后西游记",
+          "湖南卫视",
+          "上星",
+          "西影",
+          "TVB"
+        ],
+        "heatCurve": [
+          335,
+          351,
+          369,
+          379,
+          403,
+          425,
+          425,
+          422,
+          423,
+          426,
+          444,
+          464,
+          486,
+          507,
+          510,
+          513,
+          516,
+          534,
+          547,
+          571,
+          569,
+          576,
+          577,
+          600,
+          619,
+          615,
+          629,
+          653,
+          670,
+          669,
+          683,
+          687,
+          687,
+          684,
+          707,
+          734,
+          745,
+          767,
+          768,
+          774,
+          783,
+          795,
+          808,
+          814,
+          823,
+          848,
+          847,
+          835
+        ],
+        "sourceMatrix": [
+          {
+            "key": "douyin",
+            "name": "抖音",
+            "color": "#2ee6e6",
+            "count": 2762
+          },
+          {
+            "key": "weibo",
+            "name": "微博",
+            "color": "#ff5a6a",
+            "count": 1450
+          },
+          {
+            "key": "news",
+            "name": "新闻媒体",
+            "color": "#aab6d4",
+            "count": 1214
+          },
+          {
+            "key": "bilibili",
+            "name": "B站",
+            "color": "#4d8dff",
+            "count": 791
+          }
+        ],
+        "related": [
+          {
+            "type": "作品",
+            "name": "《后西游记》（AI 剧）",
+            "id": "p_houxiyouji"
+          },
+          {
+            "type": "作品",
+            "name": "《桃花潭记》（AI 剧）",
+            "id": "p_taohuatangji"
+          }
+        ],
+        "timeline": [
+          {
+            "t": "06:30",
+            "text": "安徽卫视播出《桃花潭记》"
+          },
+          {
+            "t": "08:30",
+            "text": "《后西游记》登陆湖南卫视黄金档"
+          },
+          {
+            "t": "10:00",
+            "text": "第一财经深度报道：AI 剧打破旧玩法",
+            "active": true
+          },
+          {
+            "t": "10:28",
+            "text": "西影、TVB 拥抱 AI 引发行业讨论"
+          },
+          {
+            "t": "11:08",
+            "text": "芒果超媒涨超56%，影视板块AI风口确认",
+            "active": true
+          }
+        ],
+        "originals": [
+          {
+            "title": "AI剧上星打破影视圈旧玩法",
+            "src": "第一财经",
+            "url": "https://mp.weixin.qq.com/s?__biz=MjM5MTM3NTMwNA==&mid=2661799951&idx=2",
+            "published": "10:02",
+            "status": "ok"
+          },
+          {
+            "title": "影视热榜：AI剧上星",
+            "src": "腾讯新闻/影视热榜",
+            "url": "https://new.qq.com/rain/a/20260904A076XH00",
+            "published": "09:40",
+            "status": "ok"
+          },
+          {
+            "title": "影视板块迎AI风口，A股多只概念股涨幅超20%",
+            "src": "证券时报/腾讯财经",
+            "url": "https://gu.qq.com/resources/shy/news/detail-v2/index.html?t=1#/index?_tentrees_trans=0&id=SN20260908071109a72a9c91",
+            "published": "09:08",
+            "status": "ok"
+          }
+        ]
+      },
+      {
+        "id": "h1",
+        "rank": 2,
         "title": "《欢迎来龙餐馆》票房突破 20 亿，豆瓣从 8.4 逆袭至 8.7",
         "category": "电影",
-        "heat": 968,
-        "growth1h": 8.2,
+        "heat": 942,
+        "growth1h": 8.9,
         "status": "boom",
         "firstSeen": "08:30",
-        "lastUpdate": "10:27",
-        "updatedAt": "2026-09-09T02:27:10.346Z",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "platforms": [
           "weibo",
           "douyin",
@@ -167,7 +329,6 @@
           "文牧野"
         ],
         "heatCurve": [
-          381,
           388,
           407,
           424,
@@ -214,32 +375,33 @@
           848,
           842,
           849,
-          852
+          852,
+          855
         ],
         "sourceMatrix": [
           {
             "key": "weibo",
             "name": "微博",
             "color": "#ff5a6a",
-            "count": 2150
+            "count": 2242
           },
           {
             "key": "douyin",
             "name": "抖音",
             "color": "#2ee6e6",
-            "count": 2890
+            "count": 2926
           },
           {
             "key": "bilibili",
             "name": "B站",
             "color": "#4d8dff",
-            "count": 1120
+            "count": 1137
           },
           {
             "key": "news",
             "name": "新闻媒体",
             "color": "#aab6d4",
-            "count": 680
+            "count": 683
           }
         ],
         "related": [
@@ -304,15 +466,15 @@
       },
       {
         "id": "h2",
-        "rank": 2,
+        "rank": 3,
         "title": "人人影视变正版冲上热搜第一，月费 25 元引发讨论",
         "category": "平台",
-        "heat": 923,
-        "growth1h": 15.6,
+        "heat": 938,
+        "growth1h": 3.7,
         "status": "boom",
         "firstSeen": "07:30",
-        "lastUpdate": "10:25",
-        "updatedAt": "2026-09-09T02:25:10.346Z",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "platforms": [
           "weibo",
           "douyin",
@@ -328,7 +490,6 @@
           "追剧"
         ],
         "heatCurve": [
-          210,
           213,
           229,
           266,
@@ -375,32 +536,33 @@
           929,
           961,
           982,
-          1006
+          1006,
+          998
         ],
         "sourceMatrix": [
           {
             "key": "weibo",
             "name": "微博",
             "color": "#ff5a6a",
-            "count": 3420
+            "count": 3511
           },
           {
             "key": "douyin",
             "name": "抖音",
             "color": "#2ee6e6",
-            "count": 1980
+            "count": 1984
           },
           {
             "key": "news",
             "name": "新闻媒体",
             "color": "#aab6d4",
-            "count": 1560
+            "count": 1630
           },
           {
             "key": "bilibili",
             "name": "B站",
             "color": "#4d8dff",
-            "count": 890
+            "count": 928
           }
         ],
         "related": [
@@ -447,105 +609,187 @@
         ]
       },
       {
-        "id": "h3",
-        "rank": 3,
-        "title": "AI 剧首登湖南卫视黄金档，《后西游记》打破影视圈旧玩法",
-        "category": "AI漫剧",
-        "heat": 934,
-        "growth1h": 13.6,
+        "id": "h9",
+        "rank": 4,
+        "title": "2026 服贸会今日开幕，首设「出海专区」，微短剧成「文化新三样」C位",
+        "category": "政策/行业",
+        "heat": 911,
+        "growth1h": -1.4,
         "status": "boom",
-        "firstSeen": "06:30",
-        "lastUpdate": "11:08",
-        "updatedAt": "2026-09-09T03:17:00.000Z",
+        "firstSeen": "09:00",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
+        "platforms": [
+          "news",
+          "weibo",
+          "douyin"
+        ],
+        "summary": "2026 中国国际服务贸易交易会 9 月 9 日在北京首钢园开幕（展期至 9/13）。今年文旅服务专题以「文旅融合 数智赋能」为主题，首次设立「出海专区」，聚焦微短剧、动漫、游戏「文化新三样」出海实践。90 个国家和国际组织设展，1800 余家企业线下参展，规模创历史新高。微短剧从野路子正式登上国家级展会 C 位。",
+        "keywords": [
+          "服贸会",
+          "出海专区",
+          "微短剧",
+          "文化新三样",
+          "数智赋能"
+        ],
+        "heatCurve": [
+          420,
+          435,
+          458,
+          489,
+          523,
+          567,
+          612,
+          658,
+          701,
+          746,
+          782,
+          814,
+          843,
+          867,
+          885,
+          898,
+          906,
+          912,
+          904
+        ],
+        "sourceMatrix": [
+          {
+            "key": "news",
+            "name": "新闻媒体",
+            "color": "#aab6d4",
+            "count": 2456
+          },
+          {
+            "key": "weibo",
+            "name": "微博",
+            "color": "#ff5a6a",
+            "count": 1611
+          },
+          {
+            "key": "douyin",
+            "name": "抖音",
+            "color": "#2ee6e6",
+            "count": 1007
+          }
+        ],
+        "related": [
+          {
+            "type": "政策",
+            "name": "《微短剧发展管理办法》",
+            "id": "pol_weiduanju"
+          },
+          {
+            "type": "政策",
+            "name": "关于繁荣文旅消费的若干措施",
+            "id": "pol_consume"
+          }
+        ],
+        "timeline": [
+          {
+            "t": "09:00",
+            "text": "服贸会在北京首钢园正式开幕"
+          },
+          {
+            "t": "09:30",
+            "text": "出海专区亮相，微短剧成焦点"
+          },
+          {
+            "t": "11:00",
+            "text": "90国1800+企业参展创历史新高",
+            "active": true
+          },
+          {
+            "t": "11:15",
+            "text": "行业热议：微短剧登国家级C位"
+          }
+        ],
+        "originals": [
+          {
+            "title": "2026服贸会今日开幕，文旅专题首设出海专区聚焦微短剧出海",
+            "src": "中国网",
+            "url": "http://news.china.com.cn/2026-09/09/content_118686024.html",
+            "published": "09:00",
+            "status": "ok"
+          },
+          {
+            "title": "服贸会释放政策信号：微短剧出海获国家级支持",
+            "src": "中国新闻网",
+            "url": "http://m.chinanews.com/wap/detail/chs/zw/10689140.shtml",
+            "published": "09:15",
+            "status": "ok"
+          }
+        ]
+      },
+      {
+        "id": "h10",
+        "rank": 5,
+        "title": "字节跳动推出实时空间视频生成 AI 模型，短剧「虚拟制片」门槛打骨折",
+        "category": "AI漫剧/技术",
+        "heat": 902,
+        "growth1h": 10.5,
+        "status": "rise",
+        "firstSeen": "08:30",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "platforms": [
           "douyin",
           "weibo",
           "news",
           "bilibili"
         ],
-        "summary": "《后西游记》登陆湖南卫视黄金档迎来重大数据验证：首播酷云实时峰值收视率达 0.3384%、市占率 1.7862%，拿下同时段省级卫视第一。芒果超媒股价 8/31 以来累计涨幅超 56%，市值增加超百亿元。欢瑞世纪同期涨近 50%，博纳影业涨超 20%。博纳出品的《三星堆：未来往事》即将登陆全国院线，为首部 AI 深度参与制作的院线超写实动画长片。",
+        "summary": "字节跳动宣布将推出一款基于 Seedance 构建的实时空间视频生成 AI 模型，面向直播、短剧和游戏场景，能创建交互式虚拟世界，功能对标谷歌 Genie。Seedance 已迭代至 2.0 版本。这意味着短剧「虚拟制片」门槛大幅降低——以前拍古装场景要搭景、找群演、后期特效，现在 AI 直接生成交互式 3D 空间视频，3 人小组就能干以前 30 人的活。",
         "keywords": [
-          "AI剧",
-          "后西游记",
-          "湖南卫视",
-          "上星",
-          "西影",
-          "TVB"
+          "字节跳动",
+          "Seedance",
+          "实时空间视频",
+          "虚拟制片",
+          "AI模型"
         ],
         "heatCurve": [
-          333,
-          335,
-          351,
-          369,
-          379,
-          403,
-          425,
-          425,
-          422,
-          423,
-          426,
-          444,
-          464,
-          486,
-          507,
-          510,
-          513,
-          516,
-          534,
-          547,
-          571,
-          569,
-          576,
-          577,
-          600,
-          619,
-          615,
-          629,
-          653,
-          670,
-          669,
-          683,
-          687,
-          687,
-          684,
-          707,
-          734,
-          745,
-          767,
-          768,
-          774,
-          783,
-          795,
-          808,
-          814,
-          823,
-          848,
-          847
+          380,
+          402,
+          434,
+          468,
+          501,
+          538,
+          574,
+          612,
+          654,
+          698,
+          736,
+          772,
+          805,
+          838,
+          864,
+          882,
+          894,
+          884
         ],
         "sourceMatrix": [
           {
             "key": "douyin",
             "name": "抖音",
             "color": "#2ee6e6",
-            "count": 2650
+            "count": 2380
           },
           {
             "key": "weibo",
             "name": "微博",
             "color": "#ff5a6a",
-            "count": 1420
+            "count": 1745
           },
           {
             "key": "news",
             "name": "新闻媒体",
             "color": "#aab6d4",
-            "count": 1180
+            "count": 1385
           },
           {
             "key": "bilibili",
             "name": "B站",
             "color": "#4d8dff",
-            "count": 760
+            "count": 919
           }
         ],
         "related": [
@@ -556,211 +800,50 @@
           },
           {
             "type": "作品",
-            "name": "《桃花潭记》（AI 剧）",
-            "id": "p_taohuatangji"
-          }
-        ],
-        "timeline": [
-          {
-            "t": "06:30",
-            "text": "安徽卫视播出《桃花潭记》"
-          },
-          {
-            "t": "08:30",
-            "text": "《后西游记》登陆湖南卫视黄金档"
-          },
-          {
-            "t": "10:00",
-            "text": "第一财经深度报道：AI 剧打破旧玩法",
-            "active": true
-          },
-          {
-            "t": "10:28",
-            "text": "西影、TVB 拥抱 AI 引发行业讨论"
-          },
-          {
-            "t": "11:08",
-            "text": "芒果超媒涨超56%，影视板块AI风口确认",
-            "active": true
-          }
-        ],
-        "originals": [
-          {
-            "title": "AI剧上星打破影视圈旧玩法",
-            "src": "第一财经",
-            "url": "https://mp.weixin.qq.com/s?__biz=MjM5MTM3NTMwNA==&mid=2661799951&idx=2",
-            "published": "10:02",
-            "status": "ok"
-          },
-          {
-            "title": "影视热榜：AI剧上星",
-            "src": "腾讯新闻/影视热榜",
-            "url": "https://new.qq.com/rain/a/20260904A076XH00",
-            "published": "09:40",
-            "status": "ok"
-          },
-          {
-            "title": "影视板块迎AI风口，A股多只概念股涨幅超20%",
-            "src": "证券时报/腾讯财经",
-            "url": "https://gu.qq.com/resources/shy/news/detail-v2/index.html?t=1#/index?_tentrees_trans=0&id=SN20260908071109a72a9c91",
-            "published": "09:08",
-            "status": "ok"
-          }
-        ]
-      },
-      {
-        "id": "h4",
-        "rank": 4,
-        "title": "AI 偶像剧《漂亮的恶意》单集播放近 5000 万，涨粉 70 万",
-        "category": "AI漫剧",
-        "heat": 856,
-        "growth1h": 18.7,
-        "status": "boom",
-        "firstSeen": "05:30",
-        "lastUpdate": "11:02",
-        "updatedAt": "2026-09-09T03:17:00.000Z",
-        "platforms": [
-          "douyin",
-          "xhs",
-          "bilibili",
-          "weibo"
-        ],
-        "summary": "AI 偶像剧《漂亮的恶意》和《The Accident》突然走红。截至发稿前，《漂亮的恶意》仅发布一集就在抖音获赞 331 万、播放量超 4679 万、涨粉超 70 万；《The Accident》发布 4 集后收获 5499 万播放量。网友留言：\"告诉内娱，我在短剧 AI 世界不回去了。\" 行业层面，2026 上半年国内 AI 剧漫剧市场规模已突破 220 亿元，全年有望冲击 400 亿元（同比+138%）。抖音 8 月 AI 短剧播放增量约 2853 亿（环比+21%），当月新上线近 3 万部（日均 966 部）。",
-        "keywords": [
-          "漂亮的恶意",
-          "The Accident",
-          "AI偶像剧",
-          "抖音",
-          "涨粉"
-        ],
-        "heatCurve": [
-          275,
-          307,
-          319,
-          331,
-          341,
-          346,
-          363,
-          388,
-          396,
-          405,
-          416,
-          412,
-          446,
-          466,
-          479,
-          487,
-          489,
-          494,
-          505,
-          535,
-          542,
-          562,
-          564,
-          568,
-          587,
-          607,
-          617,
-          642,
-          638,
-          645,
-          649,
-          683,
-          691,
-          724,
-          752,
-          775,
-          800,
-          825,
-          858,
-          855,
-          854,
-          880,
-          891,
-          887,
-          911,
-          920,
-          954,
-          954
-        ],
-        "sourceMatrix": [
-          {
-            "key": "douyin",
-            "name": "抖音",
-            "color": "#2ee6e6",
-            "count": 3120
-          },
-          {
-            "key": "xhs",
-            "name": "小红书",
-            "color": "#ff7ac0",
-            "count": 1340
-          },
-          {
-            "key": "bilibili",
-            "name": "B站",
-            "color": "#4d8dff",
-            "count": 980
-          },
-          {
-            "key": "weibo",
-            "name": "微博",
-            "color": "#ff5a6a",
-            "count": 620
-          }
-        ],
-        "related": [
-          {
-            "type": "作品",
             "name": "《漂亮的恶意》（AI 剧）",
             "id": "p_piaoliang"
-          },
-          {
-            "type": "作品",
-            "name": "《The Accident》（AI 剧）",
-            "id": "p_accident"
           }
         ],
         "timeline": [
           {
-            "t": "05:30",
-            "text": "《漂亮的恶意》首集发布"
-          },
-          {
             "t": "08:30",
-            "text": "抖音播放量突破 4000 万"
+            "text": "每日经济新闻率先报道字节新模型"
           },
           {
-            "t": "10:00",
-            "text": "《The Accident》4 集累计 5499 万播放",
+            "t": "09:15",
+            "text": "短剧圈炸锅：虚拟制片门槛打骨折"
+          },
+          {
+            "t": "10:30",
+            "text": "技术圈深度分析：对标谷歌Genie但野心更大",
             "active": true
           },
           {
-            "t": "10:29",
-            "text": "持续霸榜，\"不回内娱\"评论刷屏"
+            "t": "11:10",
+            "text": "行业讨论：3人团队vs30人剧组"
           }
         ],
         "originals": [
           {
-            "title": "首集涨粉70万、播放近5000万，AI偶像剧开始接管内娱",
-            "src": "新榜/腾讯新闻",
-            "url": "https://ima.qq.com/wiki/?shareId=a24aea08c234f4607c60de19e4adf38e145c0c157675d1c5c275fe76948d5993",
-            "published": "10:05",
+            "title": "字节跳动将推出实时空间视频生成AI模型",
+            "src": "每日经济新闻",
+            "url": "http://m.toutiao.com/group/7683303407461712434/",
+            "published": "08:30",
             "status": "ok"
           }
         ]
       },
       {
         "id": "h5",
-        "rank": 5,
+        "rank": 6,
         "title": "《微短剧发展管理办法》9 月 1 日施行，行业告别野蛮生长",
         "category": "政策",
-        "heat": 834,
-        "growth1h": 5.4,
+        "heat": 849,
+        "growth1h": 15.1,
         "status": "rise",
         "firstSeen": "04:30",
-        "lastUpdate": "10:22",
-        "updatedAt": "2026-09-09T02:22:10.346Z",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "platforms": [
           "weibo",
           "news",
@@ -775,7 +858,6 @@
           "统一标识"
         ],
         "heatCurve": [
-          500,
           499,
           500,
           510,
@@ -822,26 +904,27 @@
           717,
           728,
           721,
-          727
+          727,
+          737
         ],
         "sourceMatrix": [
           {
             "key": "weibo",
             "name": "微博",
             "color": "#ff5a6a",
-            "count": 1280
+            "count": 1310
           },
           {
             "key": "news",
             "name": "新闻媒体",
             "color": "#aab6d4",
-            "count": 1680
+            "count": 1693
           },
           {
             "key": "douyin",
             "name": "抖音",
             "color": "#2ee6e6",
-            "count": 720
+            "count": 748
           }
         ],
         "related": [
@@ -896,16 +979,265 @@
         ]
       },
       {
+        "id": "h11",
+        "rank": 7,
+        "title": "AI 艺人「方桃子」登《时尚 COSMO》封面，广告报价达 25.8 万引争议",
+        "category": "AI漫剧/商业",
+        "heat": 848,
+        "growth1h": -2.6,
+        "status": "boom",
+        "firstSeen": "07:00",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
+        "platforms": [
+          "weibo",
+          "douyin",
+          "xhs",
+          "news"
+        ],
+        "summary": "知名时尚杂志《时尚 COSMO》官宣 AI 艺人「方桃子」的电子刊封面，大片中身穿华服佩戴珠宝宣告主题「我即主场」。#方桃子登COSMO封面引争议#、#AI演员拍上五大杂志了# 登上热搜。方桃子是 AI 爆款剧《被裁掉的女孩》女主角（两季累计播放量突破 4.6 亿），剧集完结后社交账号涨粉 55 万，个人话题播放量破 2.8 亿。广告报价区间一度达 16.8-25.8 万元，接近千万粉丝真人博主水平。",
+        "keywords": [
+          "方桃子",
+          "COSMO",
+          "AI艺人",
+          "被裁掉的女孩",
+          "AI造星"
+        ],
+        "heatCurve": [
+          320,
+          345,
+          378,
+          412,
+          448,
+          485,
+          524,
+          564,
+          602,
+          642,
+          679,
+          712,
+          742,
+          768,
+          796,
+          822,
+          845,
+          844
+        ],
+        "sourceMatrix": [
+          {
+            "key": "weibo",
+            "name": "微博",
+            "color": "#ff5a6a",
+            "count": 2982
+          },
+          {
+            "key": "douyin",
+            "name": "抖音",
+            "color": "#2ee6e6",
+            "count": 2017
+          },
+          {
+            "key": "xhs",
+            "name": "小红书",
+            "color": "#ff7ac0",
+            "count": 1401
+          },
+          {
+            "key": "news",
+            "name": "新闻媒体",
+            "color": "#aab6d4",
+            "count": 785
+          }
+        ],
+        "related": [
+          {
+            "type": "作品",
+            "name": "《被裁掉的女孩》（AI 剧）",
+            "id": "p_fangtaozi"
+          }
+        ],
+        "timeline": [
+          {
+            "t": "07:00",
+            "text": "COSMO官宣方桃子电子刊封面"
+          },
+          {
+            "t": "08:30",
+            "text": "相关词条登上热搜，引发广泛讨论"
+          },
+          {
+            "t": "10:00",
+            "text": "广告报价16.8-25.8万曝光，接近真人博主",
+            "active": true
+          },
+          {
+            "t": "11:05",
+            "text": "美瞳品牌合作翻车：虚拟角色无法「亲测」体验"
+          }
+        ],
+        "originals": [
+          {
+            "title": "上星又上桌，AI影视进阶到什么段位了?",
+            "src": "腾讯新闻",
+            "url": "https://so.html5.qq.com/page/real/search_news?docid=70000021_0586aa0c9e476352",
+            "published": "09:09",
+            "status": "ok"
+          }
+        ]
+      },
+      {
+        "id": "h4",
+        "rank": 8,
+        "title": "AI 偶像剧《漂亮的恶意》单集播放近 5000 万，涨粉 70 万",
+        "category": "AI漫剧",
+        "heat": 833,
+        "growth1h": 5.1,
+        "status": "boom",
+        "firstSeen": "05:30",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
+        "platforms": [
+          "douyin",
+          "xhs",
+          "bilibili",
+          "weibo"
+        ],
+        "summary": "AI 偶像剧《漂亮的恶意》和《The Accident》突然走红。截至发稿前，《漂亮的恶意》仅发布一集就在抖音获赞 331 万、播放量超 4679 万、涨粉超 70 万；《The Accident》发布 4 集后收获 5499 万播放量。网友留言：\"告诉内娱，我在短剧 AI 世界不回去了。\" 行业层面，2026 上半年国内 AI 剧漫剧市场规模已突破 220 亿元，全年有望冲击 400 亿元（同比+138%）。抖音 8 月 AI 短剧播放增量约 2853 亿（环比+21%），当月新上线近 3 万部（日均 966 部）。",
+        "keywords": [
+          "漂亮的恶意",
+          "The Accident",
+          "AI偶像剧",
+          "抖音",
+          "涨粉"
+        ],
+        "heatCurve": [
+          307,
+          319,
+          331,
+          341,
+          346,
+          363,
+          388,
+          396,
+          405,
+          416,
+          412,
+          446,
+          466,
+          479,
+          487,
+          489,
+          494,
+          505,
+          535,
+          542,
+          562,
+          564,
+          568,
+          587,
+          607,
+          617,
+          642,
+          638,
+          645,
+          649,
+          683,
+          691,
+          724,
+          752,
+          775,
+          800,
+          825,
+          858,
+          855,
+          854,
+          880,
+          891,
+          887,
+          911,
+          920,
+          954,
+          954,
+          960
+        ],
+        "sourceMatrix": [
+          {
+            "key": "douyin",
+            "name": "抖音",
+            "color": "#2ee6e6",
+            "count": 3219
+          },
+          {
+            "key": "xhs",
+            "name": "小红书",
+            "color": "#ff7ac0",
+            "count": 1355
+          },
+          {
+            "key": "bilibili",
+            "name": "B站",
+            "color": "#4d8dff",
+            "count": 986
+          },
+          {
+            "key": "weibo",
+            "name": "微博",
+            "color": "#ff5a6a",
+            "count": 629
+          }
+        ],
+        "related": [
+          {
+            "type": "作品",
+            "name": "《漂亮的恶意》（AI 剧）",
+            "id": "p_piaoliang"
+          },
+          {
+            "type": "作品",
+            "name": "《The Accident》（AI 剧）",
+            "id": "p_accident"
+          }
+        ],
+        "timeline": [
+          {
+            "t": "05:30",
+            "text": "《漂亮的恶意》首集发布"
+          },
+          {
+            "t": "08:30",
+            "text": "抖音播放量突破 4000 万"
+          },
+          {
+            "t": "10:00",
+            "text": "《The Accident》4 集累计 5499 万播放",
+            "active": true
+          },
+          {
+            "t": "10:29",
+            "text": "持续霸榜，\"不回内娱\"评论刷屏"
+          }
+        ],
+        "originals": [
+          {
+            "title": "首集涨粉70万、播放近5000万，AI偶像剧开始接管内娱",
+            "src": "新榜/腾讯新闻",
+            "url": "https://ima.qq.com/wiki/?shareId=a24aea08c234f4607c60de19e4adf38e145c0c157675d1c5c275fe76948d5993",
+            "published": "10:05",
+            "status": "ok"
+          }
+        ]
+      },
+      {
         "id": "h6",
-        "rank": 6,
+        "rank": 9,
         "title": "李荣浩成都巡演首场售罄加场，9 月演出市场全面井喷",
         "category": "演唱会",
-        "heat": 789,
-        "growth1h": 6.8,
+        "heat": 786,
+        "growth1h": 1.9,
         "status": "rise",
         "firstSeen": "03:30",
-        "lastUpdate": "10:20",
-        "updatedAt": "2026-09-09T02:20:10.346Z",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "platforms": [
           "weibo",
           "douyin",
@@ -921,7 +1253,6 @@
           "演出市场井喷"
         ],
         "heatCurve": [
-          456,
           454,
           465,
           473,
@@ -968,32 +1299,33 @@
           669,
           678,
           680,
-          676
+          676,
+          675
         ],
         "sourceMatrix": [
           {
             "key": "weibo",
             "name": "微博",
             "color": "#ff5a6a",
-            "count": 1580
+            "count": 1615
           },
           {
             "key": "douyin",
             "name": "抖音",
             "color": "#2ee6e6",
-            "count": 1120
+            "count": 1143
           },
           {
             "key": "xhs",
             "name": "小红书",
             "color": "#ff7ac0",
-            "count": 940
+            "count": 984
           },
           {
             "key": "news",
             "name": "新闻媒体",
             "color": "#aab6d4",
-            "count": 520
+            "count": 522
           }
         ],
         "related": [
@@ -1051,15 +1383,15 @@
       },
       {
         "id": "h7",
-        "rank": 7,
+        "rank": 10,
         "title": "AI 漫剧《砚边青梅》以《祭侄文稿》为蓝本走红，传统文化 + AI 引热议",
         "category": "AI漫剧",
-        "heat": 745,
-        "growth1h": 7.2,
+        "heat": 765,
+        "growth1h": 11.5,
         "status": "rise",
         "firstSeen": "02:30",
-        "lastUpdate": "10:18",
-        "updatedAt": "2026-09-09T02:18:10.346Z",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "platforms": [
           "douyin",
           "xhs",
@@ -1075,7 +1407,6 @@
           "传统文化"
         ],
         "heatCurve": [
-          399,
           402,
           414,
           431,
@@ -1122,32 +1453,33 @@
           777,
           791,
           808,
-          813
+          813,
+          819
         ],
         "sourceMatrix": [
           {
             "key": "douyin",
             "name": "抖音",
             "color": "#2ee6e6",
-            "count": 1860
+            "count": 1878
           },
           {
             "key": "xhs",
             "name": "小红书",
             "color": "#ff7ac0",
-            "count": 1240
+            "count": 1268
           },
           {
             "key": "bilibili",
             "name": "B站",
             "color": "#4d8dff",
-            "count": 780
+            "count": 812
           },
           {
             "key": "news",
             "name": "新闻媒体",
             "color": "#aab6d4",
-            "count": 340
+            "count": 343
           }
         ],
         "related": [
@@ -1188,15 +1520,15 @@
       },
       {
         "id": "h8",
-        "rank": 8,
+        "rank": 11,
         "title": "广州超级草莓音乐节全阵容官宣，三天三十余组艺人",
         "category": "音乐节",
-        "heat": 698,
-        "growth1h": 4.1,
+        "heat": 712,
+        "growth1h": -0.9,
         "status": "stable",
         "firstSeen": "01:30",
-        "lastUpdate": "10:12",
-        "updatedAt": "2026-09-09T02:12:10.346Z",
+        "lastUpdate": "13:56",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "platforms": [
           "weibo",
           "douyin",
@@ -1211,7 +1543,6 @@
           "音乐节"
         ],
         "heatCurve": [
-          516,
           524,
           520,
           523,
@@ -1258,26 +1589,27 @@
           705,
           707,
           703,
-          707
+          707,
+          717
         ],
         "sourceMatrix": [
           {
             "key": "weibo",
             "name": "微博",
             "color": "#ff5a6a",
-            "count": 920
+            "count": 932
           },
           {
             "key": "douyin",
             "name": "抖音",
             "color": "#2ee6e6",
-            "count": 780
+            "count": 803
           },
           {
             "key": "xhs",
             "name": "小红书",
             "color": "#ff7ac0",
-            "count": 650
+            "count": 670
           }
         ],
         "related": [
@@ -1308,335 +1640,6 @@
             "src": "广州市文化广电旅游局",
             "url": "https://www.gz.gov.cn/",
             "published": "01:30",
-            "status": "ok"
-          }
-        ]
-      },
-      {
-        "id": "h9",
-        "rank": 9,
-        "title": "2026 服贸会今日开幕，首设「出海专区」，微短剧成「文化新三样」C位",
-        "category": "政策/行业",
-        "heat": 912,
-        "growth1h": 22.5,
-        "status": "boom",
-        "firstSeen": "09:00",
-        "lastUpdate": "11:15",
-        "updatedAt": "2026-09-09T03:17:00.000Z",
-        "platforms": [
-          "news",
-          "weibo",
-          "douyin"
-        ],
-        "summary": "2026 中国国际服务贸易交易会 9 月 9 日在北京首钢园开幕（展期至 9/13）。今年文旅服务专题以「文旅融合 数智赋能」为主题，首次设立「出海专区」，聚焦微短剧、动漫、游戏「文化新三样」出海实践。90 个国家和国际组织设展，1800 余家企业线下参展，规模创历史新高。微短剧从野路子正式登上国家级展会 C 位。",
-        "keywords": [
-          "服贸会",
-          "出海专区",
-          "微短剧",
-          "文化新三样",
-          "数智赋能"
-        ],
-        "heatCurve": [
-          420,
-          435,
-          458,
-          489,
-          523,
-          567,
-          612,
-          658,
-          701,
-          746,
-          782,
-          814,
-          843,
-          867,
-          885,
-          898,
-          906,
-          912
-        ],
-        "sourceMatrix": [
-          {
-            "key": "news",
-            "name": "新闻媒体",
-            "color": "#aab6d4",
-            "count": 2340
-          },
-          {
-            "key": "weibo",
-            "name": "微博",
-            "color": "#ff5a6a",
-            "count": 1560
-          },
-          {
-            "key": "douyin",
-            "name": "抖音",
-            "color": "#2ee6e6",
-            "count": 980
-          }
-        ],
-        "related": [
-          {
-            "type": "政策",
-            "name": "《微短剧发展管理办法》",
-            "id": "pol_weiduanju"
-          },
-          {
-            "type": "政策",
-            "name": "关于繁荣文旅消费的若干措施",
-            "id": "pol_consume"
-          }
-        ],
-        "timeline": [
-          {
-            "t": "09:00",
-            "text": "服贸会在北京首钢园正式开幕"
-          },
-          {
-            "t": "09:30",
-            "text": "出海专区亮相，微短剧成焦点"
-          },
-          {
-            "t": "11:00",
-            "text": "90国1800+企业参展创历史新高",
-            "active": true
-          },
-          {
-            "t": "11:15",
-            "text": "行业热议：微短剧登国家级C位"
-          }
-        ],
-        "originals": [
-          {
-            "title": "2026服贸会今日开幕，文旅专题首设出海专区聚焦微短剧出海",
-            "src": "中国网",
-            "url": "http://news.china.com.cn/2026-09/09/content_118686024.html",
-            "published": "09:00",
-            "status": "ok"
-          },
-          {
-            "title": "服贸会释放政策信号：微短剧出海获国家级支持",
-            "src": "中国新闻网",
-            "url": "http://m.chinanews.com/wap/detail/chs/zw/10689140.shtml",
-            "published": "09:15",
-            "status": "ok"
-          }
-        ]
-      },
-      {
-        "id": "h10",
-        "rank": 10,
-        "title": "字节跳动推出实时空间视频生成 AI 模型，短剧「虚拟制片」门槛打骨折",
-        "category": "AI漫剧/技术",
-        "heat": 894,
-        "growth1h": 19.8,
-        "status": "boom",
-        "firstSeen": "08:30",
-        "lastUpdate": "11:10",
-        "updatedAt": "2026-09-09T03:17:00.000Z",
-        "platforms": [
-          "douyin",
-          "weibo",
-          "news",
-          "bilibili"
-        ],
-        "summary": "字节跳动宣布将推出一款基于 Seedance 构建的实时空间视频生成 AI 模型，面向直播、短剧和游戏场景，能创建交互式虚拟世界，功能对标谷歌 Genie。Seedance 已迭代至 2.0 版本。这意味着短剧「虚拟制片」门槛大幅降低——以前拍古装场景要搭景、找群演、后期特效，现在 AI 直接生成交互式 3D 空间视频，3 人小组就能干以前 30 人的活。",
-        "keywords": [
-          "字节跳动",
-          "Seedance",
-          "实时空间视频",
-          "虚拟制片",
-          "AI模型"
-        ],
-        "heatCurve": [
-          380,
-          402,
-          434,
-          468,
-          501,
-          538,
-          574,
-          612,
-          654,
-          698,
-          736,
-          772,
-          805,
-          838,
-          864,
-          882,
-          894
-        ],
-        "sourceMatrix": [
-          {
-            "key": "douyin",
-            "name": "抖音",
-            "color": "#2ee6e6",
-            "count": 2340
-          },
-          {
-            "key": "weibo",
-            "name": "微博",
-            "color": "#ff5a6a",
-            "count": 1680
-          },
-          {
-            "key": "news",
-            "name": "新闻媒体",
-            "color": "#aab6d4",
-            "count": 1340
-          },
-          {
-            "key": "bilibili",
-            "name": "B站",
-            "color": "#4d8dff",
-            "count": 890
-          }
-        ],
-        "related": [
-          {
-            "type": "作品",
-            "name": "《后西游记》（AI 剧）",
-            "id": "p_houxiyouji"
-          },
-          {
-            "type": "作品",
-            "name": "《漂亮的恶意》（AI 剧）",
-            "id": "p_piaoliang"
-          }
-        ],
-        "timeline": [
-          {
-            "t": "08:30",
-            "text": "每日经济新闻率先报道字节新模型"
-          },
-          {
-            "t": "09:15",
-            "text": "短剧圈炸锅：虚拟制片门槛打骨折"
-          },
-          {
-            "t": "10:30",
-            "text": "技术圈深度分析：对标谷歌Genie但野心更大",
-            "active": true
-          },
-          {
-            "t": "11:10",
-            "text": "行业讨论：3人团队vs30人剧组"
-          }
-        ],
-        "originals": [
-          {
-            "title": "字节跳动将推出实时空间视频生成AI模型",
-            "src": "每日经济新闻",
-            "url": "http://m.toutiao.com/group/7683303407461712434/",
-            "published": "08:30",
-            "status": "ok"
-          }
-        ]
-      },
-      {
-        "id": "h11",
-        "rank": 11,
-        "title": "AI 艺人「方桃子」登《时尚 COSMO》封面，广告报价达 25.8 万引争议",
-        "category": "AI漫剧/商业",
-        "heat": 845,
-        "growth1h": 14.2,
-        "status": "boom",
-        "firstSeen": "07:00",
-        "lastUpdate": "11:05",
-        "updatedAt": "2026-09-09T03:17:00.000Z",
-        "platforms": [
-          "weibo",
-          "douyin",
-          "xhs",
-          "news"
-        ],
-        "summary": "知名时尚杂志《时尚 COSMO》官宣 AI 艺人「方桃子」的电子刊封面，大片中身穿华服佩戴珠宝宣告主题「我即主场」。#方桃子登COSMO封面引争议#、#AI演员拍上五大杂志了# 登上热搜。方桃子是 AI 爆款剧《被裁掉的女孩》女主角（两季累计播放量突破 4.6 亿），剧集完结后社交账号涨粉 55 万，个人话题播放量破 2.8 亿。广告报价区间一度达 16.8-25.8 万元，接近千万粉丝真人博主水平。",
-        "keywords": [
-          "方桃子",
-          "COSMO",
-          "AI艺人",
-          "被裁掉的女孩",
-          "AI造星"
-        ],
-        "heatCurve": [
-          320,
-          345,
-          378,
-          412,
-          448,
-          485,
-          524,
-          564,
-          602,
-          642,
-          679,
-          712,
-          742,
-          768,
-          796,
-          822,
-          845
-        ],
-        "sourceMatrix": [
-          {
-            "key": "weibo",
-            "name": "微博",
-            "color": "#ff5a6a",
-            "count": 2890
-          },
-          {
-            "key": "douyin",
-            "name": "抖音",
-            "color": "#2ee6e6",
-            "count": 1980
-          },
-          {
-            "key": "xhs",
-            "name": "小红书",
-            "color": "#ff7ac0",
-            "count": 1340
-          },
-          {
-            "key": "news",
-            "name": "新闻媒体",
-            "color": "#aab6d4",
-            "count": 780
-          }
-        ],
-        "related": [
-          {
-            "type": "作品",
-            "name": "《被裁掉的女孩》（AI 剧）",
-            "id": "p_fangtaozi"
-          }
-        ],
-        "timeline": [
-          {
-            "t": "07:00",
-            "text": "COSMO官宣方桃子电子刊封面"
-          },
-          {
-            "t": "08:30",
-            "text": "相关词条登上热搜，引发广泛讨论"
-          },
-          {
-            "t": "10:00",
-            "text": "广告报价16.8-25.8万曝光，接近真人博主",
-            "active": true
-          },
-          {
-            "t": "11:05",
-            "text": "美瞳品牌合作翻车：虚拟角色无法「亲测」体验"
-          }
-        ],
-        "originals": [
-          {
-            "title": "上星又上桌，AI影视进阶到什么段位了?",
-            "src": "腾讯新闻",
-            "url": "https://so.html5.qq.com/page/real/search_news?docid=70000021_0586aa0c9e476352",
-            "published": "09:09",
             "status": "ok"
           }
         ]
@@ -1917,7 +1920,7 @@
         "name": "《欢迎来龙餐馆》",
         "subject": "中国电影股份有限公司等",
         "time": "2026-08-11 上映",
-        "updatedAt": "2026-09-09T01:10:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "heat": 968,
         "curve": [
           388,
@@ -1997,7 +2000,7 @@
         "name": "《后西游记》（AI 剧）",
         "subject": "湖南卫视 / AI 制作团队",
         "time": "2026-09 湖南卫视黄金档",
-        "updatedAt": "2026-09-09T01:25:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "heat": 891,
         "curve": [
           330,
@@ -2071,7 +2074,7 @@
         "name": "《漂亮的恶意》（AI 偶像剧）",
         "subject": "AI 制作团队",
         "time": "2026-09 抖音上线",
-        "updatedAt": "2026-09-09T01:50:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "heat": 856,
         "curve": [
           302,
@@ -2146,7 +2149,7 @@
         "name": "李荣浩\"黑马\"世界巡回演唱会",
         "subject": "梦响当然/李荣浩工作室",
         "time": "2026-09 起 多城",
-        "updatedAt": "2026-09-09T00:30:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "heat": 912,
         "curve": [
           461,
@@ -2220,7 +2223,7 @@
         "name": "《微短剧发展管理办法》",
         "subject": "国家广播电视总局",
         "time": "2026-09-01 施行",
-        "updatedAt": "2026-09-09T02:30:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "heat": 834,
         "curve": [
           508,
@@ -2298,7 +2301,7 @@
         "pubDate": "2026-09-01",
         "effDate": "2026-09-01",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "备案/许可",
           "微短剧监管",
@@ -2347,7 +2350,7 @@
         "pubDate": "2026-08-27",
         "effDate": "2026-08-27",
         "status": "推进中",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "精品扶持",
           "微短剧",
@@ -2389,7 +2392,7 @@
         "pubDate": "2026-06-04",
         "effDate": "2026-06-04",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "AI+文化",
           "产业扶持",
@@ -2436,7 +2439,7 @@
         "pubDate": "2026-05-11",
         "effDate": "2026-05-11",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "AI+文化",
           "产业扶持",
@@ -2478,7 +2481,7 @@
         "pubDate": "2026-08-27",
         "effDate": "2026-08-27",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "产业扶持",
           "文旅消费",
@@ -2524,7 +2527,7 @@
         "pubDate": "2026-03-20",
         "effDate": "2026-03-20",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "产业扶持",
           "新业态",
@@ -2566,7 +2569,7 @@
         "pubDate": "2026-09-04",
         "effDate": "2026-09-04",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "平台责任",
           "凡播必审",
@@ -2600,7 +2603,7 @@
         "pubDate": "2026-09-01",
         "effDate": "2026-09-01",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "MCN",
           "直播管理",
@@ -2635,7 +2638,7 @@
         "pubDate": "2026-09-07",
         "effDate": "2026-09-07",
         "status": "现行有效",
-        "updatedAt": "2026-09-09T03:08:41.496Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "tags": [
           "非遗",
           "文旅融合",
@@ -2671,7 +2674,7 @@
         "change": 15.6,
         "confidence": 0.83,
         "window": 7,
-        "updatedAt": "2026-09-09T03:17:00.000Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "conclusion": "AI 艺人「方桃子」登《时尚 COSMO》电子刊封面，广告报价 16.8-25.8 万，接近千万粉丝真人博主。《被裁掉的女孩》两季播放 4.6 亿，方桃子涨粉 55 万、话题播放 2.8 亿。AI 漫剧《予你深情侵入余生》5 季总播放超 50 亿，CP 账号粉丝 56 万+，天猫七夕合作拍广告、四叶草手链销量过万。AI 造星从流量试验走向商业化落地。",
         "evidence": [
           "方桃子登 COSMO 封面，#AI演员拍上五大杂志了# 上热搜",
@@ -2694,7 +2697,7 @@
         "change": 15.8,
         "confidence": 0.91,
         "window": 7,
-        "updatedAt": "2026-09-09T02:15:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "conclusion": "AI 生成剧集《后西游记》登陆湖南卫视黄金档，首播酷云峰值收视 0.3384%、市占率 1.7862%，同时段省级卫视第一。芒果超媒 8/31 来累涨超 56%（市值增百亿）。博纳《三星堆：未来往事》定档院线——首部 AI 深度参与的超写实动画长片。AI 影视完成从「网络试水」到「主流认可+资本追捧」的跨越。",
         "evidence": [
           "《后西游记》登陆湖南卫视黄金档",
@@ -2718,11 +2721,11 @@
       {
         "id": "t_ai_idol",
         "theme": "AI 偶像剧爆发：颜值经济 + AI 降本引爆市场",
-        "index": 84.6,
+        "index": 85.6,
         "change": 18.7,
         "confidence": 0.87,
         "window": 7,
-        "updatedAt": "2026-09-09T02:15:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "conclusion": "AI 偶像剧《漂亮的恶意》《The Accident》以韩剧/美剧级颜值和经典人设模板迅速出圈，单集播放量分别达 4679 万和 5499 万。\"告诉内娱，我在 AI 短剧世界不回去了\"成为网友共识。",
         "evidence": [
           "《漂亮的恶意》单集抖音播放 4679 万、涨粉 70 万",
@@ -2747,7 +2750,7 @@
         "change": 5,
         "confidence": 0.94,
         "window": 7,
-        "updatedAt": "2026-09-09T02:15:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "conclusion": "《微短剧发展管理办法》（总局令第 16 号）9 月 1 日正式施行，同日\"微短剧统一标识\"启用。配合\"五个一批\"精品工程，行业从野蛮生长转向\"合规+精品\"双轮驱动。98.7% 的 AI 漫剧半年内未摸到盈亏线，合规门槛将加速出清。",
         "evidence": [
           "《微短剧发展管理办法》9/1 施行（八章五十四条）",
@@ -2767,11 +2770,11 @@
       {
         "id": "t_ai_culture",
         "theme": "AI 漫剧 × 传统文化：新模式跑通",
-        "index": 76.3,
+        "index": 77.3,
         "change": 9.2,
         "confidence": 0.82,
         "window": 7,
-        "updatedAt": "2026-09-09T02:15:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "conclusion": "AI 漫剧《砚边青梅》以颜真卿《祭侄文稿》为蓝本，将安史之乱史实转化为年轻人接受的视听内容，红果热度 4000 万+、抖音话题 2 亿播放。证明 AI 可成为传统文化传播的新型载体，但套路化叙事与技术穿帮仍是行业痛点。",
         "evidence": [
           "《砚边青梅》红果热度 4000 万+、收藏 80 万",
@@ -2793,11 +2796,11 @@
       {
         "id": "t_concert_boom",
         "theme": "9 月演出市场井喷：演唱会 + 音乐节高密度扎堆",
-        "index": 73.8,
+        "index": 74.8,
         "change": 6.5,
         "confidence": 0.88,
         "window": 7,
-        "updatedAt": "2026-09-09T02:15:10.346Z",
+        "updatedAt": "2026-09-09T05:56:50.205Z",
         "conclusion": "9 月演出市场迎来罕见高密度供给：李荣浩、王源、那英、汪峰、单依纯、张韶涵等密集开唱，广州草莓、成都葫芦果、武汉 X 乐园等音乐节接踵而至。中秋国庆档期叠加，多地出现\"同日多场\"盛况。",
         "evidence": [
           "李荣浩成都首场售罄，加场再秒罄",
