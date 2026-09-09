@@ -15,6 +15,8 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 9123;
 const LIMIT = 10;                 // 总 ID 上限
 const ONLINE_MS = 5 * 60 * 1000;  // 5 分钟内算在线
 const USERS_FILE = path.join(ROOT, 'users.json');
+const DATA_FILE = path.join(ROOT, 'data.json');
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dei-admin-2026'; // 更新情报用的管理口令
 
 /* ---------- 用户存储（文件持久化）---------- */
 function loadUsers() {
@@ -30,6 +32,21 @@ function saveUsers(users) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
 }
 let USERS = loadUsers();
+
+/* ---------- 情报数据（服务端实时数据源，可被管理接口更新）---------- */
+function loadData() {
+  try {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+    const j = JSON.parse(raw);
+    return (j && j.db) ? j : { version: '0', db: {} };
+  } catch (e) {
+    return { version: '0', db: {} };
+  }
+}
+function saveData(d) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(d, null, 2), 'utf8');
+}
+let DATA = loadData();
 
 function stamp() { return new Date().toISOString(); }
 
@@ -140,6 +157,26 @@ async function handleApi(req, res, pathname) {
     const u = USERS.find(x => x.id.toLowerCase() === id.toLowerCase());
     if (u) { u.lastSeen = new Date(0).toISOString(); saveUsers(USERS); }
     return sendJSON(res, 200, stateView());
+  }
+  // 获取实时情报数据（前端每次启动与轮询都读它；serverTime 用于时效计算）
+  if (pathname === '/api/data' && req.method === 'GET') {
+    return sendJSON(res, 200, { version: DATA.version, serverTime: Date.now(), db: DATA.db });
+  }
+  // 管理接口：更新情报数据（需 token；写入后版本号自动 +1，所有被分享者 30s 内自动刷新）
+  if (pathname === '/api/admin/update' && req.method === 'POST') {
+    const body = await readBody(req);
+    if (!body || body.token !== ADMIN_TOKEN) {
+      return sendJSON(res, 403, { error: 'FORBIDDEN', msg: '管理口令错误' });
+    }
+    if (!body.db || typeof body.db !== 'object') {
+      return sendJSON(res, 400, { error: 'BAD_DB', msg: 'db 字段缺失或格式错误' });
+    }
+    const prev = String(DATA.version || '0');
+    const m = prev.match(/^(.+)\.(\d+)$/);
+    const next = m ? (m[1] + '.' + (parseInt(m[2], 10) + 1)) : (prev + '.1');
+    DATA = { version: next, db: body.db };
+    saveData(DATA);
+    return sendJSON(res, 200, { ok: true, version: next, serverTime: Date.now() });
   }
   return sendJSON(res, 404, { error: 'NOT_FOUND' });
 }

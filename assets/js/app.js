@@ -3,7 +3,9 @@
    路由 + 视图渲染 + 抽屉 + 交互
    ============================================================ */
 (function(){
-const { DEI, HOTSPOTS, RANKINGS, PROJECTS, POLICIES, TRENDS, CAL, SEARCH_INDEX, SUB_TYPES, PLATFORMS } = window.DB;
+let DB = window.DB || { REF_NOW: Date.now() };
+let { DEI, HOTSPOTS, RANKINGS, PROJECTS, POLICIES, TRENDS, CAL, SEARCH_INDEX, SUB_TYPES, PLATFORMS } = DB;
+let DATA_VERSION = window.DATA_VERSION || '0';
 const C = window.Charts;
 const $ = s => document.querySelector(s);
 const view = $('#view');
@@ -11,7 +13,7 @@ const view = $('#view');
 /* ---------------- 数据时效（更新时限）----------------
    默认追踪并保留最近 1 个月（30 天）内更新/复核过的条目；
    超过时限视为超出追踪窗口，提示“已超期·建议重新核查”。 */
-const REF_NOW = window.DB.REF_NOW;
+let REF_NOW = (window.DB && window.DB.REF_NOW) || Date.now();
 const WINDOW_OPTIONS = [
   {d:7,  label:'近 1 周'},
   {d:14, label:'近 2 周'},
@@ -980,35 +982,53 @@ function bindAuthUI() {
   });
 }
 
+/* ---------------- 实时数据加载（服务端驱动）----------------
+   优先从 /api/data 获取服务端最新情报；失败则回退到打包的 data.js（离线 / file:// 模式）。
+   serverTime 作为时效计算的“现在”，保证时效准确、不冻死在旧日期。 */
+async function loadLiveData(){
+  try{
+    const res = await fetch('/api/data', {cache:'no-store'});
+    if(!res.ok) return false;
+    const j = await res.json();
+    if(!j || !j.db || !j.db.HOTSPOTS) return false;
+    DB = j.db;
+    ({ DEI, HOTSPOTS, RANKINGS, PROJECTS, POLICIES, TRENDS, CAL, SEARCH_INDEX, SUB_TYPES, PLATFORMS } = DB);
+    REF_NOW = (typeof j.serverTime === 'number') ? j.serverTime : (DB.REF_NOW || Date.now());
+    DATA_VERSION = j.version || '0';
+    return true;
+  }catch(e){ return false; }
+}
+
 /* ---------------- 数据实时同步（被分享者自动获取最新情报）----------------
-   原理：data.js 顶部带 window.DATA_VERSION；每隔 60s 拉取最新 data.js 文本，
-   若版本号变化说明情报已更新，则在用户不在看抽屉时自动刷新页面（共享实时同步）。
-   更新方式：改完 data.js 后把 DATA_VERSION 末位 +1 并重新部署即可。 */
+   原理：每隔 30s 拉取 /api/data；若版本号变化说明情报已更新，
+   则在用户不在看抽屉时自动重渲染当前视图（共享实时同步，无需整页刷新）。 */
 function startDataWatch(){
-  const local = window.DATA_VERSION || '';
   setInterval(async ()=>{
     try{
-      const res = await fetch('assets/js/data.js?_=' + Date.now(), {cache:'no-store'});
+      const res = await fetch('/api/data', {cache:'no-store'});
       if(!res.ok) return;
-      const txt = await res.text();
-      const m = txt.match(/window\.DATA_VERSION\s*=\s*['"]([^'"]+)['"]/);
-      if(m && m[1] && m[1] !== local){
+      const j = await res.json();
+      if(!j || !j.version) return;
+      if(j.version !== DATA_VERSION){
         if($('#drawer') && $('#drawer').classList.contains('show')){ pendingReload = true; return; }
         toast('📡 情报数据已更新，正在刷新…');
-        setTimeout(()=>location.reload(), 1200);
+        await loadLiveData();
+        renderTicker();
+        router();   // 重渲染当前路由视图
       }
     }catch(e){ /* file:// 或网络异常时忽略 */ }
-  }, 60000);
+  }, 30000);
 }
 
 /* ---------------- 启动 ---------------- */
-renderTicker();
-bindSearch();
-bindWindowControl();
-bindAuthUI();
-initAuth();
-router();
-startDataWatch();
-// 实时时钟（顶栏 SLA 提示）
-setInterval(()=>{}, 30000);
+(async function boot(){
+  await loadLiveData();   // 优先加载服务端实时数据（失败则回退打包数据）
+  renderTicker();
+  bindSearch();
+  bindWindowControl();
+  bindAuthUI();
+  initAuth();
+  router();
+  startDataWatch();
+})();
 })();
