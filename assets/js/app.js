@@ -899,7 +899,7 @@ async function loadDayFiles(dateStr) {
       e.stopPropagation();
       const id = b.dataset.id;
       const a = document.createElement('a');
-      a.href = '/api/files/download?id=' + id + '&dl=1';
+      a.href = '/api/files/download?id=' + encodeURIComponent(id) + '&dl=1';
       a.download = '';  // 触发浏览器原生下载
       document.body.appendChild(a);
       a.click();
@@ -907,7 +907,7 @@ async function loadDayFiles(dateStr) {
     });
     // 预览（新窗口打开，inline 模式）
     listEl.querySelectorAll('.file-view').forEach(b => b.onclick = () => {
-      window.open('/api/files/download?id=' + b.dataset.id, '_blank');
+      window.open('/api/files/download?id=' + encodeURIComponent(b.dataset.id), '_blank');
     });
     listEl.querySelectorAll('.file-del').forEach(b => b.onclick = () => confirmDelete(b.dataset.id, b.closest('.file-item')));
   } catch(e) {

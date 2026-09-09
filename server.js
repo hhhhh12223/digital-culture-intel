@@ -190,10 +190,11 @@ async function handleFileApi(req, res, pathname, urlObj) {
           const filePath = path.join(dateDir, storedName);
           fs.writeFileSync(filePath, fileObj.data);
 
-          // 写入元数据
+          // 写入元数据 —— ID 用纯 ASCII（不含文件名），避免 URL 编码问题
+          const fileId = `${dateStr}_${ts}_${rand}`;  // 纯数字+横线，URL安全
           const meta = loadFilesMeta();
           const fileRecord = {
-            id: `${dateStr}_${storedName}`,
+            id: fileId,
             date: dateStr,
             originalName: safeName,
             storedName: storedName,
@@ -266,7 +267,7 @@ async function handleFileApi(req, res, pathname, urlObj) {
   // --- 删除文件：POST /api/files/delete ---
   if (pathname === '/api/files/delete' && req.method === 'POST') {
     const body = await readBody(req);
-    const fileId = (body.id || '').replace(/[^a-zA-Z0-9_\-.]/g, '');
+    const fileId = (body.id || '').trim();
     if (!fileId) return sendJSON(res, 400, { error: 'NO_ID', msg: '缺少文件 ID' });
 
     const meta = loadFilesMeta();
@@ -285,7 +286,7 @@ async function handleFileApi(req, res, pathname, urlObj) {
 
   // --- 下载/预览文件：GET /api/files/download?id=xxx&dl=1 (dl=1 强制下载) ---
   if (pathname === '/api/files/download' && req.method === 'GET') {
-    const fileId = (urlObj.query.id || '').replace(/[^a-zA-Z0-9_\-.]/g, '');
+    const fileId = (urlObj.query.id || '').trim();
     if (!fileId) return sendJSON(res, 400, { error: 'NO_ID', msg: '缺少文件 ID' });
 
     const meta = loadFilesMeta();
