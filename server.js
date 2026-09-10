@@ -701,6 +701,72 @@ const server = http.createServer((req, res) => {
   }
 });
 
+/* ---------- 种子文件：部署后自动预置有用文档 ---------- */
+const SEED_DIR = path.join(ROOT, 'seed');
+function seedFilesIfNeeded() {
+  try {
+    const meta = loadFilesMeta();
+    // 已有文件则不重复播种
+    if (meta.files && meta.files.length > 0) {
+      console.log(`[种子] 文件中心已有 ${meta.files.length} 个文件，跳过播种`);
+      return;
+    }
+    // 检查 seed 目录是否存在
+    if (!fs.existsSync(SEED_DIR)) {
+      console.log('[种子] seed/ 目录不存在，跳过');
+      return;
+    }
+    const seedFiles = fs.readdirSync(SEED_DIR).filter(f => !f.startsWith('.') && fs.statSync(path.join(SEED_DIR, f)).isFile());
+    if (seedFiles.length === 0) return;
+
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10); // 今天
+    const dateDir = path.join(FILES_DIR, dateStr);
+    if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir, { recursive: true });
+
+    let count = 0;
+    for (const fname of seedFiles) {
+      const srcPath = path.join(SEED_DIR, fname);
+      const fileData = fs.readFileSync(srcPath);
+      const ts = Date.now() + count;
+      const rand = crypto.randomBytes(4).toString('hex');
+      const storedName = `${ts}_${rand}_${fname}`;
+      const destPath = path.join(dateDir, storedName);
+      fs.writeFileSync(destPath, fileData);
+
+      const ext = path.extname(fname).toLowerCase();
+      const mimeMap = {
+        '.md': 'text/markdown; charset=utf-8',
+        '.txt': 'text/plain; charset=utf-8',
+        '.pdf': 'application/pdf',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+      };
+
+      meta.files.push({
+        id: `${dateStr}_${ts}_${rand}`,
+        date: dateStr,
+        originalName: fname,
+        storedName: storedName,
+        size: fileData.length,
+        mimeType: mimeMap[ext] || 'application/octet-stream',
+        uploader: '系统预置',
+        note: '部署时自动预置的参考文档',
+        uploadedAt: now.toISOString(),
+      });
+      count++;
+    }
+    saveFilesMeta(meta);
+    console.log(`[种子] 已预置 ${count} 个文档到文件中心（来源：seed/ 目录）`);
+  } catch (e) {
+    console.error('[种子] 播种失败:', e.message);
+  }
+}
+
+// 启动时执行播种
+seedFilesIfNeeded();
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`[协作后端] 监听 http://0.0.0.0:${PORT}  | ID 上限 ${LIMIT}  | 当前已登记 ${USERS.length}`);
 });
