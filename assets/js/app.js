@@ -682,8 +682,17 @@ function renderData(){
   <div class="card" id="calCard">${buildCalendar()}</div>
 
   <div class="section-title">历史数据 / 报告</div>
-  <div class="grid g-3">
-    ${['2026 Q3 文娱声量月报','微短剧合规政策汇编','AI 漫剧产业白皮书','音乐节下沉市场洞察','XR 展演标准解读','短剧出海合规指南'].map((r,i)=>`<div class="card hov" style="cursor:pointer" data-rep="${r}"><div style="font-weight:700">${r}</div><div class="muted small" style="margin-top:6px">报告 · 更新 ${['09-01','08-20','08-12','07-30','09-06','09-02'][i]} · 可导出 PDF/Excel</div></div>`).join('')}
+  <div class="grid g-3" id="reportGrid">
+    ${generateDynamicReports()}
+  </div>
+
+  <div class="section-title" style="margin-top:20px">📋 数据核查报告 <span class="muted small">（智能刷新后自动生成，点击「立即核查」可手动触发）</span></div>
+  <div class="card" id="verifyReportCard">
+    <div class="verify-placeholder" id="verifyPlaceholder">
+      <div class="verify-loading-text">💡 点击下方按钮运行数据质量核查</div>
+      <button class="btn btn-primary" id="btnVerifyNow" style="margin-top:10px">🔍 立即核查</button>
+    </div>
+    <div class="verify-result" id="verifyResult" style="display:none"></div>
   </div>
   <div class="note" style="margin-top:14px"><b>技术</b>　数据接入优先官方开放数据、授权 API、合法商业数据源；采集层做时间标准化、去重、异常检测、来源可信度评分；AI 层做分类、摘要、实体识别、关系抽取、趋势检测。前端响应式 Web，桌面优先兼容移动端。</div>`;
   view.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>toast(b.dataset.x+'（演示）'));
@@ -691,6 +700,206 @@ function renderData(){
   view.querySelectorAll('[data-winopt]').forEach(b=>b.onclick=()=>setWindow(parseInt(b.dataset.winopt,10)));
   view.querySelectorAll('[data-pol]').forEach(el=>el.onclick=()=>{ if(el.dataset.pol) openPolicy(el.dataset.pol); });
   bindCollabPanel();
+  bindVerifyReport();
+}
+
+/* ---------- 动态生成历史数据/报告卡片（基于实际数据）---------- */
+function generateDynamicReports() {
+  const reports = [];
+  // 基于当前数据动态生成报告条目
+  const now = new Date();
+  const ym = `${now.getFullYear()} ${['一','二','三','四','五','六','七','八','九','十','十一','十二'][now.getMonth()]}月`;
+  // 1. 本月文娱热点汇总
+  reports.push({
+    name: `${ym} 文娱热点月报`,
+    desc: `收录 ${HOTSPOTS.length} 条热点 · DEI指数 ${DEI.value} · 更新 ${fmtDate(now)}`,
+    tag: '月报'
+  });
+  // 2. 政策汇编
+  const polRecent = POLICIES.filter(p => p.pubDate >= '2026-09-01');
+  reports.push({
+    name: `近期政策汇编（${polRecent.length}条）`,
+    desc: `国家/地方政策 · 微短剧/AI/文化出海 · 最新 ${polRecent.length > 0 ? polRecent[0].pubDate : '—'}`,
+    tag: '政策'
+  });
+  // 3. 趋势洞察报告
+  reports.push({
+    name: `文娱趋势洞察报告`,
+    desc: `${TRENDS.length} 条趋势研判 · 置信度平均 ${TRENDS.length > 0 ? Math.round(TRENDS.reduce((s,t)=>s+t.confidence,0)/TRENDS.length*100) : 0}%`,
+    tag: '趋势'
+  });
+  // 4. AI漫剧专题（如果有AI相关热点）
+  const aiHots = HOTSPOTS.filter(h => h.title.includes('AI') || h.title.includes('漫剧') || h.category === 'AI漫剧/技术');
+  if (aiHots.length > 0) {
+    reports.push({
+      name: `AI+文娱产业追踪`,
+      desc: `${aiHots.length} 条相关热点 · 涵盖AI漫剧/AI视频/智能制作 · 实时更新`,
+      tag: '专题'
+    });
+  }
+  // 5. 短剧赛道报告
+  const sdHots = HOTSPOTS.filter(h => h.title.includes('短剧') || h.title.includes('红果') || h.title.includes('微短剧'));
+  if (sdHots.length > 0) {
+    reports.push({
+      name: `微短剧行业动态`,
+      desc: `${sdHots.length} 条相关热点 · 政策+市场+平台 · 合规与出海`,
+      tag: '短剧'
+    });
+  }
+  // 6. 文化出海
+  const outHots = HOTSPOTS.filter(h => h.title.includes('出海') || h.title.includes('服贸会') || h.title.includes('海外'));
+  if (outHots.length > 0) {
+    reports.push({
+      name: `文化出海观察`,
+      desc: `${outHots.length} 条相关热点 · 服贸会/平台出海/内容输出`,
+      tag: '出海'
+    });
+  }
+  // 如果不足4个，补充通用模板
+  const tagColors = { '月报':'cy', '政策':'am', '趋势':'pu', '专题':'rd', '短剧':'gr', '出海':'bl' };
+  while (reports.length < 4) {
+    const extras = [
+      { name: `DEI 指数分析报告`, desc: `当前DEI ${DEI.value}（${DEI.delta>=0?'▲':'▼'}${Math.abs(DEI.delta)}）· 六维权重模型 · 版本 ${DEI.modelVersion}`, tag: '指数' },
+      { name: `文娱榜单回顾`, desc: `电影/演唱会/音乐节/短剧/AI漫剧 · 多维度热度排行`, tag: '榜单' },
+      { name: `协作空间使用报告`, desc: `文件中心 · 团队共享 · 日历协作记录`, tag: '协作' },
+    ];
+    reports.push(extras[reports.length % extras.length]);
+  }
+
+  return reports.slice(0, 6).map((r, i) => {
+    const upd = ['09-10','09-10','09-10','09-09','09-09','09-08'][i] || fmtDate(now).slice(5);
+    return `<div class="card hov" style="cursor:pointer" data-rep="${r.name}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="tag ${tagColors[r.tag]||'cy'}">${r.tag}</span>
+        <span class="muted small" style="font-size:11px">更新 ${upd}</span>
+      </div>
+      <div style="font-weight:700;margin:8px 0 4px">${esc(r.name)}</div>
+      <div class="muted small">${r.desc} · 可导出 PDF/Excel</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- 数据核查报告面板 ---------- */
+let _lastVerifyResult = null;
+
+function bindVerifyReport() {
+  const btn = document.getElementById('btnVerifyNow');
+  if (btn) btn.onclick = () => runVerifyAndShow();
+  // 如果有缓存结果，直接显示
+  if (_lastVerifyResult) showVerifyResult(_lastVerifyResult);
+}
+
+async function runVerifyAndShow() {
+  const placeholder = document.getElementById('verifyPlaceholder');
+  const resultEl = document.getElementById('verifyResult');
+  if (placeholder) placeholder.style.display = 'none';
+  if (resultEl) { resultEl.style.display = ''; resultEl.innerHTML = '<div style="padding:20px;text-align:center">🔍 正在运行全面数据核查…</div>'; }
+
+  try {
+    const res = await fetch('/api/admin/verify?token=dei-admin-2026', { cache: 'no-store' });
+    const j = await res.json();
+    if (res.ok && j) {
+      _lastVerifyResult = j;
+      showVerifyResult(j);
+    } else {
+      if (resultEl) resultEl.innerHTML = `<div style="padding:20px;color:var(--red)">⚠️ 核查失败：${(j&&j.msg)||'未知错误'}</div>`;
+    }
+  } catch(e) {
+    if (resultEl) resultEl.innerHTML = `<div style="padding:20px;color:var(--red)">❌ 网络错误：${String(e)}</div>`;
+  }
+}
+
+function showVerifyResult(j) {
+  const resultEl = document.getElementById('verifyResult');
+  const placeholder = document.getElementById('verifyPlaceholder');
+  if (!resultEl) return;
+  if (placeholder) placeholder.style.display = 'none';
+  resultEl.style.display = '';
+
+  const gradeColor = j.score >= 90 ? 'var(--green)' : j.score >= 75 ? '#ffb547' : j.score >= 60 ? '#ff9244' : 'var(--red)';
+  const statusIcon = j.checks.every(c => c.status === 'pass') ? '✅' : (j.checks.some(c => c.status === 'fail') ? '❌' : '⚠️');
+
+  let html = `
+    <div class="verify-head">
+      <div class="verify-score-ring" style="--score:${j.score};--color:${gradeColor}">
+        <svg viewBox="0 0 120 120" width="100" height="100">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--bg3)" stroke-width="8"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="${gradeColor}" stroke-width="8"
+            stroke-dasharray="${j.score * 3.27} 327" stroke-linecap="round"
+            transform="rotate(-90 60 60)" style="transition:stroke-dasharray 1s ease"/>
+        </svg>
+        <div class="verify-score-text"><div class="vs-num" style="color:${gradeColor}">${j.score}</div><div class="vs-label">${j.grade}</div></div>
+      </div>
+      <div class="verify-summary">
+        <div class="vs-title">${statusIcon} ${j.summary}</div>
+        <div class="vs-meta">核查时间：${fmtDT(j.verifiedAt)} · 数据版本：${esc(j.version)} · 共 ${j.details.totalItems||0} 条数据</div>
+        <button class="btn btn-sm" style="margin-top:8px" id="btnReVerify">🔄 重新核查</button>
+      </div>
+    </div>
+
+    <div class="verify-checks">`;
+
+  // 各项检查详情
+  j.checks.forEach(c => {
+    const icon = c.status === 'pass' ? '✅' : c.status === 'warn' ? '⚠️' : '❌';
+    const color = c.status === 'pass' ? 'var(--green)' : c.status === 'warn' ? '#ffb547' : 'var(--red)';
+    html += `
+      <div class="vcheck-item">
+        <div class="vcheck-head">
+          <span class="vcheck-icon">${icon}</span>
+          <span class="vcheck-name">${c.name}</span>
+          <span class="vcheck-status" style="color:${color}">${c.status === 'pass'?'通过':c.status==='warn'?'警告':'不通过'}</span>
+          <div class="vcheck-bar"><div class="vcheck-bar-fill" style="width:${c.score}%;background:${color}"></div></div>
+          <span class="vcheck-score">${c.score}</span>
+        </div>
+        <div class="vcheck-summary muted small">${c.summary}</div>`;
+
+    if (c.items && c.items.length > 0) {
+      html += `<div class="vcheck-items">`;
+      c.items.forEach(item => {
+        const lvlColor = item.level === 'critical' ? 'var(--red)' : item.level === 'warn' ? '#ffb547' : 'var(--cyan)';
+        html += `<div class="vcheck-item-detail">
+          <span class="vcheck-dot" style="background:${lvlColor}"></span>
+          <span class="vcheck-item-name">${esc(item.name)}</span>
+          <span class="vcheck-issues">${(item.issues||[]).join('；')}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  html += `</div>`; // .verify-checks
+
+  // 改进建议
+  if (j.suggestions && j.suggestions.length > 0) {
+    html += `
+    <div class="verify-suggestions">
+      <div class="vcheck-name">💡 改进建议</div>
+      <ul>${j.suggestions.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  // 数据概览
+  if (j.details.counts) {
+    const c = j.details.counts;
+    html += `
+    <div class="verify-overview">
+      <div class="vcheck-name">📊 数据概览</div>
+      <div class="grid g-4" style="margin-top:8px">
+        <div class="vo-card"><div class="vo-num">${c.hotspots}</div><div class="vo-lab">热点</div></div>
+        <div class="vo-card"><div class="vo-num">${c.policies}</div><div class="vo-lab">政策</div></div>
+        <div class="vo-card"><div class="vo-num">${c.trends}</div><div class="vo-lab">趋势</div></div>
+        <div class="vo-card"><div class="vo-num">${c.projects}</div><div class="vo-lab">项目</div></div>
+      </div>
+    </div>`;
+  }
+
+  resultEl.innerHTML = html;
+
+  // 绑定重新核查按钮
+  const reBtn = document.getElementById('btnReVerify');
+  if (reBtn) reBtn.onclick = () => runVerifyAndShow();
 }
 function bindCollabPanel(){
   const refresh = ()=>{
@@ -1290,6 +1499,17 @@ function startDataWatch(){
         // 立即触发一次数据加载（不等30s轮询）
         const loaded = await loadLiveData();
         if (loaded) { renderTicker(); router(); }
+        // ★ 自动运行数据核查并在页面末尾展示报告
+        try {
+          const vr = await fetch('/api/admin/verify?token=dei-admin-2026', { cache: 'no-store' });
+          const vj = await vr.json();
+          if (vr.ok && vj) {
+            _lastVerifyResult = vj;
+            // 如果当前在数据中心页面，直接渲染核查结果
+            if (curPath() === 'data') showVerifyResult(vj);
+            else toast(`📋 核查完成：${vj.score}分 ${vj.grade}（前往数据中心查看详情）`);
+          }
+        } catch(e) { /* 核查失败不阻断主流程 */ }
       } else {
         toast('⚠️ ' + ((j && j.msg) || '刷新失败，请稍后重试'));
       }

@@ -669,7 +669,236 @@ async function handleApi(req, res, pathname) {
     }
   }
 
+  /* ========== 数据自动核查 ==========
+     GET /api/admin/verify?token=dei-admin-2026
+
+     对当前 data.json 做全面质量核查，返回结构化报告：
+     1. 时效性核查 — 各板块 updatedAt 距今天数、超期条目
+     2. 完整性核查 — 必填字段缺失、空值、异常值
+     3. 一致性核查 — 排名与热度匹配、版本号递增
+     4. 内容健康度 — 标题重复、摘要过短、来源单一
+     5. 综合评分 — 0-100 分 + 等级 + 改进建议
+     结果缓存 60 秒，避免频繁计算 */
+  if (pathname === '/api/admin/verify' && req.method === 'GET') {
+    const token = (urlObj.query.token || '');
+    if (token !== ADMIN_TOKEN) {
+      return sendJSON(res, 403, { error: 'FORBIDDEN', msg: '管理口令错误' });
+    }
+
+    // 缓存：60秒内不重复计算
+    const now = Date.now();
+    if (_verifyCache && (now - _verifyCache.ts) < 60000) {
+      return sendJSON(res, 200, _verifyCache.result);
+    }
+
+    const report = runVerification();
+    _verifyCache = { ts: now, result: report };
+    return sendJSON(res, 200, report);
+  }
+
   return sendJSON(res, 404, { error: 'NOT_FOUND' });
+}
+
+/* ---------- 核查引擎 ---------- */
+let _verifyCache = null;
+
+function runVerification() {
+  const d = loadData();
+  const db = d.db || {};
+  const now = Date.now();
+  const version = d.version || '0';
+  const report = {
+    verifiedAt: new Date().toISOString(),
+    version: version,
+    score: 0,
+    grade: '—',
+    summary: '',
+    checks: [],
+    details: {},
+    suggestions: [],
+  };
+
+  const checks = [];
+  let totalWeight = 0;
+  let weightedSum = 0;
+
+  /* ---- 1. 时效性核查 ---- */
+  const freshnessCheck = { name: '数据时效性', status: 'pass', score: 100, items: [], weight: 25 };
+  const allItems = [
+    ...(db.HOTSPOTS || []).map(h => ({ kind: '热点', name: h.title, updatedAt: h.updatedAt, id: h.id })),
+    ...(db.POLICIES || []).map(p => ({ kind: '政策', name: p.title, updatedAt: p.updatedAt, id: p.id })),
+    ...(db.TRENDS || []).map(t => ({ kind: '趋势', name: t.theme, updatedAt: t.updatedAt, id: t.id })),
+    ...(db.PROJECTS || []).map(p => ({ kind: '项目', name: p.name, updatedAt: p.updatedAt, id: p.id })),
+  ];
+  let freshCount = 0, staleCount = 0, expiredCount = 0;
+  const DAY_MS = 86400000;
+  allItems.forEach(item => {
+    const age = item.updatedAt ? Math.round((now - new Date(item.updatedAt).getTime()) / DAY_MS) : 9999;
+    if (age <= 1) freshCount++;
+    else if (age <= 7) staleCount++;
+    else expiredCount++;
+    if (age > 7) {
+      freshnessCheck.items.push({ name: item.name.slice(0,40), kind: item.kind, age, level: age > 30 ? 'critical' : 'warn' });
+    }
+  });
+  if (allItems.length > 0) {
+    const freshRate = freshCount / allItems.length;
+    freshnessCheck.score = Math.round(freshRate * 80 + (staleCount / allItems.length) * 15);
+    if (expiredCount > allItems.length * 0.3) { freshnessCheck.status = 'fail'; freshnessCheck.score = Math.max(0, freshnessCheck.score - 30); }
+    else if (expiredCount > 0) { freshnessCheck.status = 'warn'; freshnessCheck.score = Math.max(0, freshnessCheck.score - 15); }
+  }
+  freshnessCheck.summary = `${freshCount} 条最新（≤1天）· ${staleCount} 条近期（≤7天）· ${expiredCount} 条超期（>7天）`;
+  checks.push(freshnessCheck);
+
+  /* ---- 2. 完整性核查 ---- */
+  const completenessCheck = { name: '数据完整性', status: 'pass', score: 100, items: [], weight: 25 };
+  // 检查热点必填字段
+  (db.HOTSPOTS || []).forEach((h, i) => {
+    const missing = [];
+    if (!h.title || !h.title.trim()) missing.push('标题');
+    if (!h.category) missing.push('分类');
+    if (typeof h.heat !== 'number') missing.push('热度');
+    if (!h.summary || h.summary.length < 10) missing.push('摘要过短');
+    if (!h.sourceMatrix || h.sourceMatrix.length === 0) missing.push('来源矩阵');
+    if (!h.originals || h.originals.length === 0) missing.push('原文');
+    if (missing.length > 0) completenessCheck.items.push({ name: (h.title || `热点#${i}`).slice(0,35), issues: missing, level: missing.length > 3 ? 'critical' : 'warn' });
+  });
+  // 检查政策必填字段
+  (db.POLICIES || []).forEach((p, i) => {
+    const missing = [];
+    if (!p.title || !p.title.trim()) missing.push('标题');
+    if (!p.dept) missing.push('部门');
+    if (!p.aiSummary || p.aiSummary.length < 5) missing.push('AI摘要');
+    if (!p.clauses || p.clauses.length === 0) missing.push('核心条款');
+    if (missing.length > 0) completenessCheck.items.push({ name: (p.title || `政策#${i}`).slice(0,35), issues: missing, level: 'warn' });
+  });
+  // 检查趋势必填字段
+  (db.TRENDS || []).forEach((t, i) => {
+    const missing = [];
+    if (!t.theme || !t.theme.trim()) missing.push('主题');
+    if (!t.conclusion || t.conclusion.length < 10) missing.push('结论过短');
+    if (!t.evidence || t.evidence.length === 0) missing.push('证据缺失');
+    if (missing.length > 0) completenessCheck.items.push({ name: (t.theme || `趋势#${i}`).slice(0,35), issues: missing, level: 'warn' });
+  });
+  completenessCheck.score = Math.max(0, 100 - completenessCheck.items.length * 10);
+  if (completenessCheck.items.length > 5) completenessCheck.status = 'fail';
+  else if (completenessCheck.items.length > 0) completenessCheck.status = 'warn';
+  completenessCheck.summary = `共 ${allItems.length} 条数据，${completenessCheck.items.length} 条存在字段问题`;
+  checks.push(completenessCheck);
+
+  /* ---- 3. 一致性核查 ---- */
+  const consistencyCheck = { name: '数据一致性', status: 'pass', score: 100, items: [], weight: 20 };
+  // 热度排名一致性
+  if (db.HOTSPOTS && db.HOTSPOTS.length > 1) {
+    const sorted = [...db.HOTSPOTS].sort((a,b) => b.heat - a.heat);
+    let rankErrors = 0;
+    db.HOTSPOTS.forEach((h, i) => {
+      if (h.rank !== i + 1) rankErrors++;
+      if (h.heat !== sorted[i].heat) rankErrors++;
+    });
+    if (rankErrors > 0) {
+      consistencyCheck.items.push({ name: '热度排名不一致', issues: [`发现 ${rankErrors} 处排名/热度排序错误`], level: 'warn' });
+      consistencyCheck.score -= rankErrors * 5;
+    }
+  }
+  // DEI 子项求和合理性
+  if (db.DEI && db.DEI.sub && db.DEI.sub.length > 0) {
+    const subTotal = db.DEI.sub.reduce((s, x) => s + (x.value || 0), 0);
+    const expected = Math.round(subTotal / db.DEI.sub.length);
+    if (Math.abs(db.DEI.value - expected) > 30) {
+      consistencyCheck.items.push({ name: 'DEI指数与子项偏差大', issues: [`DEI=${db.DEI.value}, 子项均值≈${expected}`], level: 'info' });
+      consistencyCheck.score -= 10;
+    }
+  }
+  // 版本号格式检查
+  if (!/^\d{4}-\d{2}-\d{2}\.\d+$/.test(version)) {
+    consistencyCheck.items.push({ name: '版本号格式异常', issues: [`当前: ${version}`], level: 'warn' });
+    consistencyCheck.score -= 15;
+  }
+  consistencyCheck.score = Math.max(0, consistencyCheck.score);
+  if (consistencyCheck.items.some(x => x.level === 'critical')) consistencyCheck.status = 'fail';
+  else if (consistencyCheck.items.length > 0) consistencyCheck.status = 'warn';
+  consistencyCheck.summary = consistencyCheck.items.length === 0 ? '所有一致性检查通过' : `发现 ${consistencyCheck.items.length} 处一致性问题`;
+  checks.push(consistencyCheck);
+
+  /* ---- 4. 内容健康度核查 ---- */
+  const healthCheck = { name: '内容健康度', status: 'pass', score: 100, items: [], weight: 20 };
+  // 标题重复检测
+  const titleMap = {};
+  (db.HOTSPOTS || []).forEach(h => {
+    const k = h.title.slice(0, 15);
+    titleMap[k] = (titleMap[k] || 0) + 1;
+  });
+  Object.entries(titleMap).forEach(([k, v]) => {
+    if (v > 1) healthCheck.items.push({ name: k + '…', issues: [`${v} 条标题高度相似`], level: 'warn' });
+  });
+  // 摘要质量
+  let shortSummary = 0;
+  (db.HOTSPOTS || []).forEach(h => { if (!h.summary || h.summary.length < 20) shortSummary++; });
+  if (shortSummary > 0) healthCheck.items.push({ name: '热点摘要过短', issues: [`${shortSummary} 条热点摘要不足20字`], level: shortSummary > 3 ? 'warn' : 'info' });
+  // 来源多样性
+  const sourceSet = new Set();
+  (db.HOTSPOTS || []).forEach(h => (h.platforms || []).forEach(p => sourceSet.add(p)));
+  if (sourceSet.size < 3 && (db.HOTSPOTS || []).length > 3) {
+    healthCheck.items.push({ name: '来源平台单一', issues: [`仅覆盖 ${sourceSet.size} 个平台`], level: 'info' });
+  }
+  // 分类覆盖
+  const catSet = new Set((db.HOTSPOTS || []).map(h => h.category));
+  if (catSet.size < 3 && (db.HOTSPOTS || []).length > 5) {
+    healthCheck.items.push({ name: '分类集中度过高', issues: [`仅覆盖 ${catSet.size} 个分类`], level: 'info' });
+  }
+  healthCheck.score = Math.max(0, 100 - healthCheck.items.filter(i => i.level === 'warn').length * 12 - healthCheck.items.filter(i => i.level === 'info').length * 3);
+  if (healthCheck.score < 70) healthCheck.status = 'warn';
+  healthCheck.summary = healthCheck.items.length === 0 ? '内容质量良好' : `${healthCheck.items.length} 项建议优化`;
+  checks.push(healthCheck);
+
+  /* ---- 5. 数据量核查 ---- */
+  const volumeCheck = { name: '数据覆盖度', status: 'pass', score: 100, items: [], weight: 10 };
+  const counts = { hotspots: (db.HOTSPOTS || []).length, policies: (db.POLICIES || []).length, trends: (db.TRENDS || []).length, projects: (db.PROJECTS || []).length };
+  if (counts.hotspots < 5) { volumeCheck.items.push({ name: '热点不足', issues: [`仅 ${counts.hotspots} 条，建议≥5条`], level: 'warn' }); volumeCheck.score -= 20; }
+  if (counts.policies < 2) { volumeCheck.items.push({ name: '政策不足', issues: [`仅 ${counts.policies} 条，建议≥2条`], level: 'warn' }); volumeCheck.score -= 15; }
+  if (counts.trends < 2) { volumeCheck.items.push({ name: '趋势不足', issues: [`仅 ${counts.trends} 条，建议≥2条`], level: 'info' }); volumeCheck.score -= 10; }
+  volumeCheck.score = Math.max(0, volumeCheck.score);
+  if (volumeCheck.score < 70) volumeCheck.status = 'warn';
+  volumeCheck.summary = `热点${counts.hotspots} · 政策${counts.policies} · 趋势${counts.trends} · 项目${counts.projects}`;
+  checks.push(volumeCheck);
+
+  /* ---- 综合评分 ---- */
+  checks.forEach(c => {
+    totalWeight += c.weight;
+    weightedSum += c.score * c.weight;
+  });
+  report.score = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+  if (report.score >= 90) report.grade = 'A（优秀）';
+  else if (report.score >= 75) report.grade = 'B（良好）';
+  else if (report.score >= 60) report.grade = 'C（合格）';
+  else report.grade = 'D（需改进）';
+
+  const failCount = checks.filter(c => c.status === 'fail').length;
+  const warnCount = checks.filter(c => c.status === 'warn').length;
+  if (failCount > 0) report.summary = `发现 ${failCount} 项严重问题、${warnCount} 项警告，综合评分 ${report.score}/${report.grade}`;
+  else if (warnCount > 0) report.summary = `整体良好，${warnCount} 项可优化，综合评分 ${report.score}/${report.grade}`;
+  else report.summary = `全部核查通过 ✅，综合评分 ${report.score}/${report.grade}`;
+
+  report.checks = checks;
+  report.details = {
+    freshness: { ...freshnessCheck, items: freshnessCheck.items.slice(0, 10) },
+    completeness: { ...completenessCheck, items: completenessCheck.items.slice(0, 10) },
+    consistency: { ...consistencyCheck, items: consistencyCheck.items.slice(0, 10) },
+    health: { ...healthCheck, items: healthCheck.items.slice(0, 10) },
+    volume: volumeCheck,
+    counts,
+    totalItems: allItems.length,
+  };
+
+  // 改进建议
+  if (freshnessCheck.status !== 'pass') report.suggestions.push('建议点击「智能刷新」按钮获取最新数据');
+  if (completenessCheck.items.length > 0) report.suggestions.push('部分数据缺少必填字段，建议补充完整');
+  if (healthCheck.items.some(i => i.level === 'warn')) report.suggestions.push('存在相似标题或过短摘要，建议人工审核');
+  if (volumeCheck.status !== 'pass') report.suggestions.push('数据量偏少，建议扩充热点/政策/趋势条目');
+  if (report.suggestions.length === 0) report.suggestions.push('数据质量优秀，继续保持更新频率');
+
+  return report;
 }
 
 /* ---------- 启动 ---------- */
